@@ -1,0 +1,7 @@
+{% if vlans %}
+[vlan-config]
+{% for v in vlans %}
+ vlan {{ v.id }} {% if v.smart %}smart{% else %}common{% endif %}
+{% endfor %}
+#
+{% endif %}

@@ -1,0 +1,11 @@
+{% if pons %}
+[gpon]
+{% for pon in pons %}
+ interface {{ pon.interface }}
+{% if pon.raw.ont_auto_find %}
+  port {{ pon.port or 0 }} ont-auto-find enable
+{% endif %}
+  port dba bandwidth-assignment-mode {{ pon.port or 0 }} {{ pon.raw.optical.dba_assignment_mode }}
+{% endfor %}
+#
+{% endif %}

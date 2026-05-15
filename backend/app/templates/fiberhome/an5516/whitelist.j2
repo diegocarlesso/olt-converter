@@ -1,0 +1,5 @@
+!module config:onu_auth.
+{% for onu in onus %}
+set white phy addr {{ onu.serial_number or 'AUTOSERIAL' }} pas {{ onu.password or 'null' }} ac add sl {{ onu.slot or 1 }} p {{ onu.pon_port or 1 }} o {{ onu.onu_id }} ty {{ onu.onu_type or onu.line_profile_name or '5506-04-FA' }}
+
+{% endfor %}

@@ -1,0 +1,8 @@
+{% if service_ports %}
+[service-port]
+{% for sp in service_ports %}
+ service-port {{ sp.id }} vlan {{ sp.match_vlan }} {{ sp.pon }} ont {{ sp.onu_id }} gemport {{ sp.gem_id }}{% if sp.user_vlan %} multi-service user-vlan {{ sp.user_vlan }}{% endif %}{% if sp.inbound_traffic_profile %} inbound traffic-table name "{{ sp.inbound_traffic_profile }}"{% endif %}{% if sp.outbound_traffic_profile %} outbound traffic-table name "{{ sp.outbound_traffic_profile }}"{% endif %}
+
+{% endfor %}
+#
+{% endif %}

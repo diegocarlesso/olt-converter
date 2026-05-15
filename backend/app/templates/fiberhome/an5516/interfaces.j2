@@ -1,0 +1,5 @@
+{% for up in uplinks %}
+set uplink slot {{ up.raw.slot or 19 }} port {{ up.raw.port or 1 }} {% if up.raw.enabled %}enable{% else %}disable{% endif %}
+
+set uplink slot {{ up.raw.slot or 19 }} port {{ up.raw.port or 1 }} Interface serdes
+{% endfor %}

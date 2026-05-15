@@ -1,0 +1,12 @@
+{% if uplinks %}
+[uplinks]
+{% for up in uplinks %}
+ {# Huawei usa 'port vlan X 0/slot port' #}
+{% if up.raw.allowed_vlans %}
+ port vlan {{ up.raw.allowed_vlans[0] }}{% if up.raw.allowed_vlans|length > 1 %} to {{ up.raw.allowed_vlans[-1] }}{% endif %} {{ up.interface }}
+{% elif up.raw.native_vlan %}
+ port vlan {{ up.raw.native_vlan }} {{ up.interface }}
+{% endif %}
+{% endfor %}
+#
+{% endif %}

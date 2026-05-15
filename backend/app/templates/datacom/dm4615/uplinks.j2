@@ -1,0 +1,12 @@
+{% for up in uplinks %}
+interface {{ up.interface }}
+{% if up.raw.description %}
+ description {{ up.raw.description }}
+{% endif %}
+{% if up.raw.enabled %}
+ no shutdown
+{% else %}
+ shutdown
+{% endif %}
+!
+{% endfor %}

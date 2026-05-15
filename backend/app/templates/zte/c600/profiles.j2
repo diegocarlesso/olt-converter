@@ -1,0 +1,29 @@
+!<profiles>
+{% for dba in dba_profiles %}
+gpon-profile tcont {{ dba.name | safe_name }} type {{ dba.type_num }}{% if dba.max %} maximum {{ dba.max }}{% endif %}{% if dba.assured %} assured {{ dba.assured }}{% endif %}{% if dba.fix %} fixed {{ dba.fix }}{% endif %}
+
+{% endfor %}
+{% for lp in line_profiles %}
+gpon-onu profile line-profile {{ lp.name | safe_name }}
+{% for tb in lp.tcont_bindings %}
+  tcont {{ tb.tcont_id }} profile {{ tb.dba_profile_name }}
+{% endfor %}
+{% for gb in lp.gemport_bindings %}
+  gemport {{ gb.gem_id }} tcont {{ gb.tcont_id }}
+{% endfor %}
+$
+{% endfor %}
+{% for sp in service_profiles %}
+gpon-onu profile service-profile {{ sp.name | safe_name }}
+{% if sp.ports.eth %}
+  port-config eth {{ sp.ports.eth }}
+{% endif %}
+{% if sp.ports.pots %}
+  port-config pots {{ sp.ports.pots }}
+{% endif %}
+{% for trans in sp.port_vlan_translations %}
+  vlan-translate eth {{ trans.port }} translation {{ trans.translation }} user-vlan {{ trans.user_vlan }}
+{% endfor %}
+$
+{% endfor %}
+!</profiles>

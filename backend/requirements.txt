@@ -1,0 +1,15 @@
+# OLT Config Converter Engine — Backend
+#
+# IMPORTANTE: Compatível com Python 3.12, 3.13 e 3.14.
+# Em Python 3.14, `pydantic-core` precisa de wheel pré-compilado:
+# se sua máquina não tem Rust e o pip tentar buildar, atualize o pip
+# (`python -m pip install -U pip`) — wheels para 3.14 saíram a partir
+# do pydantic 2.10. Aqui pedimos pydantic >= 2.11 para garantir.
+
+fastapi>=0.115.0,<1.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.11.0
+jinja2>=3.1.4
+python-multipart>=0.0.12
+pyyaml>=6.0.2
+structlog>=24.4.0

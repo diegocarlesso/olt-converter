@@ -1,0 +1,7 @@
+{% if traffic_profiles %}
+[traffic-tables]
+{% for tp in traffic_profiles %}
+ traffic table ip index {{ tp.profile_id }} name "{{ tp.name }}" cir {{ tp.cir or 1024 }} cbs {{ tp.cbs or 33000 }} pir {{ tp.pir or tp.cir or 1024 }} pbs {{ tp.pbs or 33000 }} color-mode {{ tp.color_mode }} priority {{ tp.priority }} inner-priority {{ tp.inner_priority }} priority-policy {{ tp.priority_policy }}
+{% endfor %}
+#
+{% endif %}

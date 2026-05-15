@@ -1,0 +1,8 @@
+{% if boards %}
+[pre-config]
+  <pre-config>
+{% for b in boards %}
+ board add 0/{{ b.slot }} {{ b.board_type }}
+{% endfor %}
+#
+{% endif %}

@@ -1,0 +1,13 @@
+{% for ot in onu_type_profiles %}
+add cs onu profile name {{ ot.name }} onutype {{ ot.onu_type_code or ot.type_id }} pontype {{ ot.pon_type_code or 712 }} onucapa {{ ot.capability_code or 0 }} lan1g {{ ot.lan1g }} lan10g {{ ot.lan10g }} pots {{ ot.pots }}
+{% if ot.wifi %}
+add cs onu profile option wifi {{ ot.wifi }}
+{% endif %}
+{% if ot.eid %}
+add cs onu profile option eid {{ ot.eid }} end
+{% endif %}
+{% endfor %}
+{% for d in dba_profiles %}
+dba-profile add profile-id {{ d.profile_id }} profile-name "{{ d.name }}" {{ d.type.value if d.type.value else 'type4' }}{% if d.assured_bandwidth %} assure {{ d.assured_bandwidth }}{% endif %}{% if d.max_bandwidth %} max {{ d.max_bandwidth }}{% endif %}{% if d.fix_bandwidth %} fix {{ d.fix_bandwidth }}{% endif %}
+
+{% endfor %}

@@ -1,0 +1,18 @@
+{% if service_profiles %}
+[srvprofiles]
+{% for sp in service_profiles %}
+ ont-srvprofile gpon profile-id {{ sp.profile_id }} profile-name "{{ sp.name }}"
+{% set ports = sp.ports %}
+{% if ports.pots or ports.eth or ports.catv or ports.wifi %}
+  ont-port{% if ports.pots %} pots{% if ports.pots_adaptive %} adaptive{% endif %} {{ ports.pots }}{% endif %}{% if ports.eth %} eth{% if ports.eth_adaptive %} adaptive{% endif %} {{ ports.eth }}{% endif %}{% if ports.catv %} catv{% if ports.catv_adaptive %} adaptive{% endif %} {{ ports.catv }}{% endif %}{% if ports.wifi %} wifi{% if ports.wifi_adaptive %} adaptive{% endif %} {{ ports.wifi }}{% endif %}
+
+{% endif %}
+{% for trans in sp.port_vlan_translations %}
+  port vlan eth {{ trans.port }} translation {{ trans.translation }} user-vlan {{ trans.user_vlan }}
+{% endfor %}
+  commit
+  quit
+
+{% endfor %}
+#
+{% endif %}

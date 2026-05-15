@@ -1,0 +1,10 @@
+{% for up in uplinks %}
+{% if up.raw.allowed_vlans %}
+{% for vid in up.raw.allowed_vlans %}
+add vlan vlan_begin {{ vid }} vlan_end {{ vid }} tag uplink slot {{ up.raw.slot or 19 }} port {{ up.raw.port or 1 }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% for v in vlans %}
+add vlan vlan_begin {{ v.id }} vlan_end {{ v.id }} tag allslot 0
+{% endfor %}

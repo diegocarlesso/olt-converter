@@ -1,0 +1,8 @@
+{% if onts %}
+[onts]
+{% for o in onts %}
+ ont add {{ o.slot }} {{ o.port }} {{ o.onu_id }}{% if o.serial_number %} sn-auth "{{ o.serial_number }}"{% endif %} omci ont-lineprofile-id {{ o.line_profile_id }} ont-srvprofile-id {{ o.service_profile_id }}{% if o.description %} desc "{{ o.description }}"{% endif %}
+
+{% endfor %}
+#
+{% endif %}

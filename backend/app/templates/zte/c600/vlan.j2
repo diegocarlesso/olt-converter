@@ -1,0 +1,20 @@
+!<vlan>
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+{% if vlan.name %}
+ name {{ vlan.name }}
+{% endif %}
+{% if vlan.description %}
+ description {{ vlan.description }}
+{% endif %}
+$
+{% endfor %}
+{% for v in mgmt_vlans %}
+{% if v.ip_address %}
+interface vlan {{ v.id }}
+ ip address {{ v.ip_address }} {{ v.netmask or '255.255.255.0' }}
+ description {{ v.description or 'Management' }}
+$
+{% endif %}
+{% endfor %}
+!</vlan>

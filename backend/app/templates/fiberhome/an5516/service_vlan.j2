@@ -1,0 +1,5 @@
+{% for sv in service_vlans %}
+create service_vlan {{ sv.service_id }}
+set service_vlan {{ sv.service_id }} {{ sv.name | safe_name }} type {{ sv.service_type.value if sv.service_type.value else 'data' }}
+set service_vlan {{ sv.service_id }} vlan_begin {{ sv.vlan_begin }} vlan_end {{ sv.vlan_end }}
+{% endfor %}

@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    @apply bg-bg text-slate-200 antialiased;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-panel;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-bg-border rounded;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-600;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply bg-bg-panel border border-bg-border rounded-lg overflow-hidden flex flex-col;
+  }
+  .panel-header {
+    @apply px-4 py-3 border-b border-bg-border bg-bg-elevated flex items-center justify-between text-sm font-semibold;
+  }
+  .btn {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors;
+  }
+  .btn-primary {
+    @apply btn bg-brand hover:bg-brand-light text-bg;
+  }
+  .btn-ghost {
+    @apply btn bg-bg-elevated hover:bg-bg-border text-slate-200;
+  }
+  .pill {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  .pill-green {
+    @apply pill bg-emerald-900/40 text-emerald-300 border border-emerald-700/40;
+  }
+  .pill-red {
+    @apply pill bg-rose-900/40 text-rose-300 border border-rose-700/40;
+  }
+  .pill-yellow {
+    @apply pill bg-amber-900/40 text-amber-300 border border-amber-700/40;
+  }
+  .pill-blue {
+    @apply pill bg-sky-900/40 text-sky-300 border border-sky-700/40;
+  }
+}

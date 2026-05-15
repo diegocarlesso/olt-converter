@@ -1,0 +1,15 @@
+[global-config]
+  <global-config>
+ sysname {{ hostname }}
+ system modify logon password disable
+ system user password security mode basic
+ system user password security-length 8
+{% for v in mgmt_vlans %}
+{% if v.ip_address %}
+ interface vlanif {{ v.id }}
+  ip address {{ v.ip_address }} {{ v.netmask or '255.255.255.0' }}
+  description {{ v.description or 'Management' }}
+  quit
+{% endif %}
+{% endfor %}
+#

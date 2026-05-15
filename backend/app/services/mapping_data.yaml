@@ -1,0 +1,55 @@
+# Mapeamento explícito de interfaces entre vendors.
+# Edite este arquivo (ou via API /mapping) para sobrescrever regras
+# automáticas usadas pelo `map_interface`.
+#
+# Estrutura:
+#   <src_vendor>:
+#     <dst_vendor>:
+#       <interface origem>: <interface destino>
+#
+# A engine só consulta a tabela quando ambos vendor de origem e destino estão
+# presentes. Senão, cai para a derivação automática.
+
+fiberhome:
+  zte:
+    "ge-1/1/1": "gei-1/1/1"
+    "ge-1/1/2": "gei-1/1/2"
+    "xge-1/1/1": "xgei-1/1/1"
+    "pon-1/1/1": "gpon_olt-1/1/1"
+    "pon-1/1/2": "gpon_olt-1/1/2"
+  huawei:
+    "ge-1/1/1": "0/8/0"
+    "ge-1/1/2": "0/8/1"
+    "pon-1/1/1": "gpon 0/1/0"
+    "pon-1/1/2": "gpon 0/1/1"
+  datacom:
+    "ge-1/1/1": "gigabit-ethernet 1/1/1"
+    "xge-1/1/1": "ten-gigabit-ethernet 1/1/9"
+
+zte:
+  huawei:
+    "gei-1/1/5": "0/8/0"
+    "xgei-1/1/2": "0/9/0"
+    "gpon_olt-1/3/1": "gpon 0/3/0"
+  fiberhome:
+    "gei-1/1/5": "ge-1/1/5"
+    "gpon_olt-1/3/1": "pon-1/3/1"
+  datacom:
+    "xgei-1/1/2": "ten-gigabit-ethernet 1/1/9"
+
+huawei:
+  zte:
+    "0/8/0": "gei-1/1/5"
+    "0/9/0": "xgei-1/1/1"
+  fiberhome:
+    "0/8/0": "ge-1/1/5"
+  datacom:
+    "0/9/0": "ten-gigabit-ethernet 1/1/9"
+
+datacom:
+  zte:
+    "ten-gigabit-ethernet 1/1/9": "xgei-1/1/2"
+  huawei:
+    "ten-gigabit-ethernet 1/1/9": "0/9/0"
+  fiberhome:
+    "ten-gigabit-ethernet 1/1/9": "xge-1/1/1"

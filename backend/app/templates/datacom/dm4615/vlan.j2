@@ -1,0 +1,11 @@
+{% if vlans %}
+dot1q
+{% for v in vlans %}
+ vlan {{ v.id }}
+{% if v.name %}
+  name {{ v.name }}
+{% endif %}
+ !
+{% endfor %}
+!
+{% endif %}

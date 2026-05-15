@@ -1,0 +1,19 @@
+{% if line_profiles %}
+[lineprofiles]
+{% for lp in line_profiles %}
+ ont-lineprofile {{ lp.scope.value if lp.scope.value else 'gpon' }} profile-id {{ lp.profile_id }} profile-name "{{ lp.name }}"
+{% for t in lp.tcont_bindings %}
+  tcont {{ t.tcont_id }} dba-profile-name "{{ t.dba_profile_name }}"
+{% endfor %}
+{% for g in lp.gemport_bindings %}
+  gem add {{ g.gem_id }} eth tcont {{ g.tcont_id }}
+{% endfor %}
+{% for m in lp.mappers %}
+  mapping-mode vlan
+  gem mapping {{ m.gem_id }} 0 vlan {{ m.vlan_id }}
+{% endfor %}
+  commit
+  quit
+{% endfor %}
+#
+{% endif %}

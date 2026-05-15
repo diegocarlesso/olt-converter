@@ -1,0 +1,45 @@
+!<pon-config>
+{% for pon in pons %}
+interface {{ pon.interface }}
+{% if pon.description %}
+  description {{ pon.description }}
+{% endif %}
+  no shutdown
+$
+{% for onu in pon.onus %}
+interface gpon {{ pon.interface | replace('gpon_olt-', '') }}
+ onu {{ onu.onu_id }} type {{ onu.onu_type or 'ALL_CAPABILITY' }}{% if onu.serial_number %} sn {{ onu.serial_number }}{% endif %}
+
+ onu {{ onu.onu_id }}
+{% if onu.serial_number %}
+  serial-number {{ onu.serial_number }}
+{% endif %}
+{% if onu.service_profile_name or onu.line_profile_name %}
+  service-profile {{ onu.service_profile_name or 'SP-DEFAULT' }} line-profile {{ onu.line_profile_name or 'LP-DEFAULT' }}
+{% endif %}
+{% if onu.eth_ports %}
+{% for eth in onu.eth_ports %}
+  ethernet {{ eth.port_id }}
+   negotiation
+{% if eth.admin_state == 'up' %}
+   no shutdown
+{% else %}
+   shutdown
+{% endif %}
+{% if eth.native_vlan %}
+   native vlan vlan-id {{ eth.native_vlan }}
+{% endif %}
+  !
+{% endfor %}
+{% elif onu.native_vlan %}
+  ethernet 1
+   negotiation
+   no shutdown
+   native vlan vlan-id {{ onu.native_vlan }}
+  !
+{% endif %}
+ !
+$
+{% endfor %}
+{% endfor %}
+!</pon-config>

@@ -1,0 +1,6 @@
+!<service-port>
+{% for sp in service_ports %}
+service-port {{ sp.id }} gpon {{ sp.pon | replace('gpon_olt-', '') }} onu {{ sp.onu_id }} gem {{ sp.gem_id }} match vlan vlan-id {{ sp.match_vlan }} action vlan {{ sp.action }} vlan-id {{ sp.target_vlan }}{% if sp.user_vlan and sp.user_vlan != sp.target_vlan %} user-vlan vlan-id {{ sp.user_vlan }}{% endif %}
+
+{% endfor %}
+!</service-port>

@@ -1,0 +1,15 @@
+!system name:{{ hostname }}
+cli debug off
+idle-timeout 0
+terminal length 512
+set new cmd enable
+{% for v in mgmt_vlans %}
+set manage_vlan {{ v.id }} {{ v.name or 'MGMT' }}
+{% if v.ip_address %}
+set manage vlan name {{ v.name or 'MGMT' }} ip {{ v.ip_address }}{% if v.netmask %}/{{ v.netmask }}{% endif %}
+
+{% endif %}
+{% endfor %}
+{% for r in static_routes %}
+add static route destination {{ r.destination }} gateway {{ r.gateway }} mask {{ r.netmask }}
+{% endfor %}

@@ -1,0 +1,6 @@
+{% if boards %}
+!module config:CardAuth.
+{% for b in boards %}
+set card_auth slot {{ b.slot }} type {{ b.board_type }}
+{% endfor %}
+{% endif %}

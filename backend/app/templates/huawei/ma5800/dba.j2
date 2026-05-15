@@ -1,0 +1,8 @@
+{% if dba_profiles %}
+[dba]
+{% for d in dba_profiles %}
+ dba-profile add profile-id {{ d.profile_id }} profile-name "{{ d.name }}" {{ d.type.value if d.type.value else 'type4' }}{% if d.assured_bandwidth %} assure {{ d.assured_bandwidth }}{% endif %}{% if d.max_bandwidth %} max {{ d.max_bandwidth }}{% endif %}{% if d.fix_bandwidth %} fix {{ d.fix_bandwidth }}{% endif %}
+
+{% endfor %}
+#
+{% endif %}

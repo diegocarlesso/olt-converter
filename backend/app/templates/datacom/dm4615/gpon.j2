@@ -1,0 +1,23 @@
+gpon
+{% for dba in dba_profiles %}
+ profile dba {{ dba.name | safe_name }}
+{% if dba.max_bandwidth %}
+  maximum-bandwidth {{ dba.max_bandwidth }}
+{% endif %}
+{% if dba.assured_bandwidth %}
+  assured-bandwidth {{ dba.assured_bandwidth }}
+{% endif %}
+ !
+{% endfor %}
+{% for pon in pons %}
+ interface {{ pon.interface }}
+{% for onu in pon.onus %}
+  onu {{ onu.onu_id }} serial-number {{ onu.serial_number or 'AUTOSERIAL' }}
+{% if onu.service_profile_name %}
+   profile {{ onu.service_profile_name }}
+{% endif %}
+  !
+{% endfor %}
+ !
+{% endfor %}
+!

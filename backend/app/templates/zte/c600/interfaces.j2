@@ -1,0 +1,20 @@
+!<if-intf>
+{% for up in uplinks %}
+interface {{ up.interface }}
+{% if up.description %}
+  description {{ up.description }}
+{% endif %}
+{% if up.enabled %}
+  no shutdown
+{% else %}
+  shutdown
+{% endif %}
+{% if up.native_vlan %}
+  switchport access vlan {{ up.native_vlan }}
+{% endif %}
+{% if up.allowed_vlans %}
+  switchport allowed vlan {{ up.allowed_vlans | join(',') }}
+{% endif %}
+$
+{% endfor %}
+!</if-intf>
