@@ -10,11 +10,12 @@ Uso:
 """
 from __future__ import annotations
 
+__test__ = False
+
 import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from app.models import Vendor                          # noqa: E402
 from app.parsers import detect_vendor, parser_registry  # noqa: E402
