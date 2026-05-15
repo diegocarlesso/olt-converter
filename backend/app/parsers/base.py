@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
 from app.models.universal_core import OLTConfig
+from app.parsers.capabilities import ParserCapabilities
 
 
 @dataclass
@@ -14,6 +15,7 @@ class ParserResult:
 
 
 class BaseParser(ABC):
+    capabilities = ParserCapabilities()
     @classmethod
     @abstractmethod
     def detect(cls, config_text: str) -> bool:
