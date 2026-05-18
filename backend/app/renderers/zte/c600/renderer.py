@@ -23,6 +23,7 @@ class ZTEC600Renderer(BaseRenderer):
             self._render("profiles.j2", **ctx),
             self._render("pon.j2", **ctx),
             self._render("service_port.j2", **ctx),
+            self._render("subscriber_edge.j2", **ctx),
             self._render("footer.j2", **ctx),
         ]
         return self._join(*blocks)
@@ -85,6 +86,20 @@ class ZTEC600Renderer(BaseRenderer):
             for d in config.dba_profiles
         ]
 
+        # L9 subscriber edge — ONUs com pon_path original + eth_ports + wan/ssid
+        onts_with_edge = []
+        for onu in config.onus:
+            if not (onu.eth_ports or onu.wan_bindings or onu.ssids):
+                continue
+            pon_path = onu.pon_interface.replace("gpon_olt-", "").replace("gpon-olt_", "")
+            onts_with_edge.append({
+                "pon_path": pon_path,
+                "onu_id": onu.onu_id,
+                "eth_ports": onu.eth_ports,
+                "wan_bindings": onu.wan_bindings,
+                "ssids": onu.ssids,
+            })
+
         return {
             "config": config,
             "hostname": config.hostname,
@@ -96,4 +111,5 @@ class ZTEC600Renderer(BaseRenderer):
             "service_profiles": config.service_profiles,
             "dba_profiles": dbas,
             "mgmt_vlans": [v for v in config.vlans if v.is_management],
+            "onts_with_edge": onts_with_edge,
         }

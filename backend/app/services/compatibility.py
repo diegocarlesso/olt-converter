@@ -118,6 +118,15 @@ FEATURES = (
     "omci_provisioning",
     "stb_ports",
     "ssid_binding",
+    # L9 subscriber edge — recém promovido a modelos formais
+    "subscriber_edge_uni",         # EthernetPort com bridge_mode/lan_service
+    "subscriber_edge_wifi",        # WiFiRadio + WiFiSSID (per-ONU)
+    "subscriber_edge_bridge_group", # BridgeGroup (eth agregadas em bridge)
+    "subscriber_edge_wan_binding", # WANBinding (ONU→WAN profile + mode)
+    "subscriber_edge_lan_service", # LANService (data/iptv/voip por UNI)
+    "subscriber_edge_stb",         # STBConfig (porta STB dedicada IPTV)
+    "subscriber_edge_multicast",   # MulticastBinding (IGMP/MVLAN per-ONU)
+    "subscriber_edge_port_route",  # PortRoute (Huawei ont port route)
 )
 
 
@@ -163,6 +172,15 @@ VENDOR_CAPABILITIES: dict[Vendor, dict[str, FeatureCapability]] = {
         "omci_provisioning": FeatureCapability("omci_provisioning", 0.5, 0.5),
         "stb_ports": FeatureCapability("stb_ports", 0.0, 0.0),
         "ssid_binding": FeatureCapability("ssid_binding", 0.0, 0.0),
+        # L9 — Fiberhome WOS forte em wancfg+ssid+pppoe per-ONU
+        "subscriber_edge_uni":          FeatureCapability("subscriber_edge_uni", 0.6, 0.4, ("eth ports derivadas do cs profile",)),
+        "subscriber_edge_wifi":         FeatureCapability("subscriber_edge_wifi", 0.9, 0.7, ("set wifi_serv_wlan",)),
+        "subscriber_edge_bridge_group": FeatureCapability("subscriber_edge_bridge_group", 0.2, 0.3),
+        "subscriber_edge_wan_binding":  FeatureCapability("subscriber_edge_wan_binding", 0.85, 0.6, ("set wancfg",)),
+        "subscriber_edge_lan_service":  FeatureCapability("subscriber_edge_lan_service", 0.3, 0.3),
+        "subscriber_edge_stb":          FeatureCapability("subscriber_edge_stb", 0.0, 0.0),
+        "subscriber_edge_multicast":    FeatureCapability("subscriber_edge_multicast", 0.0, 0.0),
+        "subscriber_edge_port_route":   FeatureCapability("subscriber_edge_port_route", 0.0, 0.0),
     },
     Vendor.HUAWEI: {
         "hostname": FeatureCapability("hostname", 1.0, 1.0),
@@ -201,6 +219,15 @@ VENDOR_CAPABILITIES: dict[Vendor, dict[str, FeatureCapability]] = {
         "omci_provisioning": FeatureCapability("omci_provisioning", 1.0, 1.0),
         "stb_ports": FeatureCapability("stb_ports", 0.0, 0.0),
         "ssid_binding": FeatureCapability("ssid_binding", 0.0, 0.0),
+        # L9 — Huawei: ont port native-vlan, ont wan-config, srvprofile port-vlan
+        "subscriber_edge_uni":          FeatureCapability("subscriber_edge_uni", 0.85, 0.85, ("ont port native-vlan, ont-srvprofile",)),
+        "subscriber_edge_wifi":         FeatureCapability("subscriber_edge_wifi", 0.4, 0.3, ("via ont-srvprofile ssid",)),
+        "subscriber_edge_bridge_group": FeatureCapability("subscriber_edge_bridge_group", 0.5, 0.5),
+        "subscriber_edge_wan_binding":  FeatureCapability("subscriber_edge_wan_binding", 0.9, 0.85, ("ont wan-profile + ont wan-config",)),
+        "subscriber_edge_lan_service":  FeatureCapability("subscriber_edge_lan_service", 0.7, 0.7, ("service-port multi-service",)),
+        "subscriber_edge_stb":          FeatureCapability("subscriber_edge_stb", 0.0, 0.0),
+        "subscriber_edge_multicast":    FeatureCapability("subscriber_edge_multicast", 0.0, 0.0),
+        "subscriber_edge_port_route":   FeatureCapability("subscriber_edge_port_route", 0.9, 0.5, ("ont port route",)),
     },
     Vendor.ZTE: {
         "hostname": FeatureCapability("hostname", 1.0, 1.0),
@@ -239,6 +266,15 @@ VENDOR_CAPABILITIES: dict[Vendor, dict[str, FeatureCapability]] = {
         "omci_provisioning": FeatureCapability("omci_provisioning", 0.8, 0.8),
         "stb_ports": FeatureCapability("stb_ports", 0.0, 0.0),
         "ssid_binding": FeatureCapability("ssid_binding", 0.0, 0.0),
+        # L9 — ZTE: pon-onu-mng com vlan port eth_0/N, switchport-bind, ssid, wan
+        "subscriber_edge_uni":          FeatureCapability("subscriber_edge_uni", 0.95, 0.85, ("vlan port eth_0/N mode tag",)),
+        "subscriber_edge_wifi":         FeatureCapability("subscriber_edge_wifi", 0.85, 0.5, ("ssid auth wpa wifi_0/N",)),
+        "subscriber_edge_bridge_group": FeatureCapability("subscriber_edge_bridge_group", 0.8, 0.6, ("switchport-bind veip",)),
+        "subscriber_edge_wan_binding":  FeatureCapability("subscriber_edge_wan_binding", 0.85, 0.5, ("wan N ethuni, pppoe inline",)),
+        "subscriber_edge_lan_service":  FeatureCapability("subscriber_edge_lan_service", 0.7, 0.6, ("service NAME gemport",)),
+        "subscriber_edge_stb":          FeatureCapability("subscriber_edge_stb", 0.0, 0.0),
+        "subscriber_edge_multicast":    FeatureCapability("subscriber_edge_multicast", 0.0, 0.0),
+        "subscriber_edge_port_route":   FeatureCapability("subscriber_edge_port_route", 0.0, 0.0),
     },
     Vendor.DATACOM: {
         "hostname": FeatureCapability("hostname", 1.0, 1.0),
@@ -277,6 +313,15 @@ VENDOR_CAPABILITIES: dict[Vendor, dict[str, FeatureCapability]] = {
         "omci_provisioning": FeatureCapability("omci_provisioning", 0.7, 0.7),
         "stb_ports": FeatureCapability("stb_ports", 0.0, 0.0),
         "ssid_binding": FeatureCapability("ssid_binding", 0.0, 0.0),
+        # L9 — Datacom DmOS via profile onu + mapper
+        "subscriber_edge_uni":          FeatureCapability("subscriber_edge_uni", 0.6, 0.6, ("profile onu mapper",)),
+        "subscriber_edge_wifi":         FeatureCapability("subscriber_edge_wifi", 0.0, 0.0),
+        "subscriber_edge_bridge_group": FeatureCapability("subscriber_edge_bridge_group", 0.4, 0.4),
+        "subscriber_edge_wan_binding":  FeatureCapability("subscriber_edge_wan_binding", 0.3, 0.3),
+        "subscriber_edge_lan_service":  FeatureCapability("subscriber_edge_lan_service", 0.4, 0.4),
+        "subscriber_edge_stb":          FeatureCapability("subscriber_edge_stb", 0.0, 0.0),
+        "subscriber_edge_multicast":    FeatureCapability("subscriber_edge_multicast", 0.0, 0.0),
+        "subscriber_edge_port_route":   FeatureCapability("subscriber_edge_port_route", 0.0, 0.0),
     },
 }
 
@@ -322,6 +367,15 @@ EQUIVALENCE_COVERAGE: dict[str, float] = {
     "omci_provisioning": 1.0,
     "stb_ports": 0.4,
     "ssid_binding": 0.3,
+    # L9 subscriber edge — equivalência semântica entre vendors
+    "subscriber_edge_uni": 0.85,            # EthernetPort é universal
+    "subscriber_edge_wifi": 0.75,           # SSID/auth/encrypt universais; campos variam
+    "subscriber_edge_bridge_group": 0.7,    # Bridge groups variam entre vendors
+    "subscriber_edge_wan_binding": 0.65,    # Modos PPPoE/IPoE/DHCP equivalentes; sintaxe varia
+    "subscriber_edge_lan_service": 0.75,    # data/iptv/voip universais
+    "subscriber_edge_stb": 0.6,             # Conceito equivalente, sintaxe varia muito
+    "subscriber_edge_multicast": 0.6,
+    "subscriber_edge_port_route": 0.4,      # Huawei-específico em grande parte
 }
 
 

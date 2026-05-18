@@ -1,0 +1,276 @@
+{
+  "criteria": {
+    "C1_provenance_promotion": true,
+    "C2_no_promotion_crash": true,
+    "C3_extra_vendor_populated": true,
+    "C4_formal_entities_materialized": true,
+    "C5_cross_binding_integrity": true,
+    "C6_confidence_healthy": true,
+    "C7_renderer_se_completeness": true
+  },
+  "details": {
+    "files_analyzed": 12,
+    "files_with_l9_data": 4,
+    "promotion_errors": 0,
+    "extra_vendor_populated_by_vendor": {
+      "zte": {
+        "files": 5,
+        "onus_with_ev": 760,
+        "total_onus": 1260
+      },
+      "huawei": {
+        "files": 7,
+        "onus_with_ev": 130,
+        "total_onus": 2984
+      }
+    },
+    "formal_entities_total": {
+      "radios": 89,
+      "ssids": 178,
+      "bridge_groups": 744,
+      "wan_bindings": 795,
+      "port_routes": 520
+    },
+    "integrity_ok": 2237,
+    "integrity_broken": 0,
+    "confidence_buckets": {
+      "medium": 1384,
+      "high": 568,
+      "low": 374
+    },
+    "renderer_se_emit": {
+      "fiberhome": 1,
+      "zte": 3
+    },
+    "per_file": [
+      {
+        "file": "ETA-LOJA-ZTE-OLT01.txt",
+        "vendor": "zte",
+        "onus": 1092,
+        "extra_vendor_onus": 760,
+        "formal": {
+          "radios": 89,
+          "ssids": 178,
+          "bridge_groups": 744,
+          "wan_bindings": 555,
+          "port_routes": 0
+        },
+        "integrity": {
+          "ok": 1477,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 178,
+          "huawei": 0,
+          "datacom": 0
+        }
+      },
+      {
+        "file": "MG-GVS-OLT-BRAIPE.txt",
+        "vendor": "huawei",
+        "onus": 565,
+        "extra_vendor_onus": 18,
+        "formal": {
+          "radios": 0,
+          "ssids": 0,
+          "bridge_groups": 0,
+          "wan_bindings": 36,
+          "port_routes": 72
+        },
+        "integrity": {
+          "ok": 108,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 0,
+          "zte": 61,
+          "datacom": 0
+        }
+      },
+      {
+        "file": "MG-GVS-OLT-MARIANA-X7.txt",
+        "vendor": "huawei",
+        "onus": 1811,
+        "extra_vendor_onus": 88,
+        "formal": {
+          "radios": 0,
+          "ssids": 0,
+          "bridge_groups": 0,
+          "wan_bindings": 156,
+          "port_routes": 352
+        },
+        "integrity": {
+          "ok": 508,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 0,
+          "zte": 323,
+          "datacom": 0
+        }
+      },
+      {
+        "file": "OLT HUAWEI PROFILES .txt",
+        "vendor": "huawei",
+        "onus": 0,
+        "extra_vendor_onus": 0,
+        "formal": {},
+        "integrity": {
+          "ok": 0,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 0,
+          "zte": 0,
+          "datacom": 0
+        }
+      },
+      {
+        "file": "OLT SERVICOS.txt",
+        "vendor": "huawei",
+        "onus": 0,
+        "extra_vendor_onus": 0,
+        "formal": {},
+        "integrity": {
+          "ok": 0,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 0,
+          "zte": 0,
+          "datacom": 0
+        }
+      },
+      {
+        "file": "OLT-NOVA-BRAIPE.txt",
+        "vendor": "huawei",
+        "onus": 608,
+        "extra_vendor_onus": 24,
+        "formal": {
+          "radios": 0,
+          "ssids": 0,
+          "bridge_groups": 0,
+          "wan_bindings": 48,
+          "port_routes": 96
+        },
+        "integrity": {
+          "ok": 144,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 0,
+          "zte": 75,
+          "datacom": 0
+        }
+      },
+      {
+        "file": "OLT-ZTE-CRISTAL.txt",
+        "vendor": "zte",
+        "onus": 167,
+        "extra_vendor_onus": 0,
+        "formal": {
+          "radios": 0,
+          "ssids": 0,
+          "bridge_groups": 0,
+          "wan_bindings": 0,
+          "port_routes": 0
+        },
+        "integrity": {
+          "ok": 0,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 0,
+          "huawei": 0,
+          "datacom": 0
+        }
+      },
+      {
+        "file": "OLT-ZTE-ITABAIANA.txt",
+        "vendor": "zte",
+        "onus": 0,
+        "extra_vendor_onus": 0,
+        "formal": {},
+        "integrity": {
+          "ok": 0,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 0,
+          "huawei": 0,
+          "datacom": 0
+        }
+      },
+      {
+        "file": "OLT-ZTE-MUCURICI.txt",
+        "vendor": "zte",
+        "onus": 0,
+        "extra_vendor_onus": 0,
+        "formal": {},
+        "integrity": {
+          "ok": 0,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 0,
+          "huawei": 0,
+          "datacom": 0
+        }
+      },
+      {
+        "file": "PROVISIONAR_ONU.txt",
+        "vendor": "zte",
+        "onus": 1,
+        "extra_vendor_onus": 0,
+        "formal": {
+          "radios": 0,
+          "ssids": 0,
+          "bridge_groups": 0,
+          "wan_bindings": 0,
+          "port_routes": 0
+        },
+        "integrity": {
+          "ok": 0,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 0,
+          "huawei": 0,
+          "datacom": 0
+        }
+      },
+      {
+        "file": "SCRIPT-GER-OLT.txt",
+        "vendor": "huawei",
+        "onus": 0,
+        "extra_vendor_onus": 0,
+        "formal": {},
+        "integrity": {
+          "ok": 0,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 0,
+          "zte": 0,
+          "datacom": 0
+        }
+      },
+      {
+        "file": "Script_OLT_Huawei.txt",
+        "vendor": "huawei",
+        "onus": 0,
+        "extra_vendor_onus": 0,
+        "formal": {},
+        "integrity": {
+          "ok": 0,
+          "broken": 0
+        },
+        "renderer_se_lines": {
+          "fiberhome": 0,
+          "zte": 0,
+          "datacom": 0
+        }
+      }
+    ]
+  }
+}

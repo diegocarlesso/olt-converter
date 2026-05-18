@@ -3,14 +3,18 @@
 {% for lp in line_profiles %}
  ont-lineprofile {{ lp.scope.value if lp.scope.value else 'gpon' }} profile-id {{ lp.profile_id }} profile-name "{{ lp.name }}"
 {% for t in lp.tcont_bindings %}
-  tcont {{ t.tcont_id }} dba-profile-name "{{ t.dba_profile_name }}"
+{% if t.get('dba_profile_name') %}
+  tcont {{ t.get('tcont_id', 0) }} dba-profile-name "{{ t.dba_profile_name }}"
+{% elif t.get('dba_profile_id') %}
+  tcont {{ t.get('tcont_id', 0) }} dba-profile-id {{ t.dba_profile_id }}
+{% endif %}
 {% endfor %}
 {% for g in lp.gemport_bindings %}
-  gem add {{ g.gem_id }} eth tcont {{ g.tcont_id }}
+  gem add {{ g.get('gem_id', 0) }} eth tcont {{ g.get('tcont_id', 0) }}
 {% endfor %}
 {% for m in lp.mappers %}
   mapping-mode vlan
-  gem mapping {{ m.gem_id }} 0 vlan {{ m.vlan_id }}
+  gem mapping {{ m.get('gem_id', 0) }} {{ m.get('queue', 0) }} vlan {{ m.get('vlan_id', 0) }}
 {% endfor %}
   commit
   quit

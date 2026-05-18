@@ -72,6 +72,22 @@ from app.models.system import (
     SSHConfig,
     User,
 )
+from app.models.subscriber_edge import (
+    BridgeGroup,
+    BridgeMode,
+    LANService,
+    LANServiceType,
+    MulticastBinding,
+    PortRoute,
+    STBConfig,
+    SubscriberEdge,
+    WANBinding,
+    WANMode,
+    WiFiAuthMode,
+    WiFiBand,
+    WiFiRadio,
+    WiFiSSID,
+)
 from app.models.unified_model import OLTConfig
 
 __all__ = [
@@ -139,4 +155,19 @@ __all__ = [
     "IGMPConfig",
     "MulticastConfig",
     "OMCIConfig",
+    # L9 subscriber edge
+    "BridgeGroup",
+    "BridgeMode",
+    "LANService",
+    "LANServiceType",
+    "MulticastBinding",
+    "PortRoute",
+    "STBConfig",
+    "SubscriberEdge",
+    "WANBinding",
+    "WANMode",
+    "WiFiAuthMode",
+    "WiFiBand",
+    "WiFiRadio",
+    "WiFiSSID",
 ]

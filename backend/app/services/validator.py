@@ -276,6 +276,122 @@ def _validate_traffic_profile_refs(c: OLTConfig, r: ValidationReport) -> None:
 
 
 # ---------------------------------------------------------------------------
+# L9 — Subscriber edge bindings (WiFi, WAN, Bridge, LANService, Multicast)
+# ---------------------------------------------------------------------------
+def _validate_wan_bindings(c: OLTConfig, r: ValidationReport) -> None:
+    """ONU.wan_bindings.wan_profile_ref deve existir em config.wan_profiles."""
+    wan_names = {w.name for w in c.wan_profiles}
+    for o_idx, onu in enumerate(c.onus):
+        for wb in onu.wan_bindings:
+            ref = getattr(wb, "wan_profile_ref", None)
+            if ref and ref not in wan_names:
+                r.add(
+                    "warning",
+                    "WAN_PROFILE_REF_MISSING",
+                    f"ONU {onu.pon_interface}:{onu.onu_id} WANBinding aponta para WAN profile '{ref}' inexistente",
+                    path=f"onus[{o_idx}].wan_bindings",
+                )
+
+
+def _validate_ssid_radios(c: OLTConfig, r: ValidationReport) -> None:
+    """WiFiSSID.radio_id deve referenciar um WiFiRadio existente na mesma ONU."""
+    for o_idx, onu in enumerate(c.onus):
+        radio_ids = {radio.radio_id for radio in onu.radios}
+        for ssid in onu.ssids:
+            if ssid.radio_id not in radio_ids and onu.radios:
+                r.add(
+                    "warning",
+                    "SSID_RADIO_MISSING",
+                    f"ONU {onu.pon_interface}:{onu.onu_id} SSID '{ssid.name}' (radio_id={ssid.radio_id}) sem rádio correspondente",
+                    path=f"onus[{o_idx}].ssids",
+                )
+        # SSIDs sem nenhum rádio (não foi promovido)
+        if onu.ssids and not onu.radios:
+            r.add(
+                "info",
+                "SSID_NO_RADIOS",
+                f"ONU {onu.pon_interface}:{onu.onu_id} tem {len(onu.ssids)} SSIDs mas nenhum rádio (radio sintetizado faltando)",
+                path=f"onus[{o_idx}]",
+            )
+
+
+def _validate_bridge_groups(c: OLTConfig, r: ValidationReport) -> None:
+    """BridgeGroup.member_port_ids ⊂ ONU.eth_ports."""
+    for o_idx, onu in enumerate(c.onus):
+        eth_ids = {e.port_id for e in onu.eth_ports}
+        for bg in onu.bridge_groups:
+            for pid in bg.member_port_ids:
+                if pid not in eth_ids:
+                    r.add(
+                        "warning",
+                        "BRIDGE_GROUP_PORT_MISSING",
+                        f"ONU {onu.pon_interface}:{onu.onu_id} BridgeGroup '{bg.name}' membro eth {pid} não existe",
+                        path=f"onus[{o_idx}].bridge_groups",
+                    )
+
+
+def _validate_lan_services(c: OLTConfig, r: ValidationReport) -> None:
+    """LANService.vlan_id deve existir em config.vlans."""
+    vlan_ids = {v.id for v in c.vlans}
+    for o_idx, onu in enumerate(c.onus):
+        for svc in onu.lan_services:
+            if svc.vlan_id and svc.vlan_id not in vlan_ids:
+                r.add(
+                    "warning",
+                    "LAN_SERVICE_VLAN_MISSING",
+                    f"ONU {onu.pon_interface}:{onu.onu_id} LANService '{svc.name}' aponta para VLAN {svc.vlan_id} inexistente",
+                    path=f"onus[{o_idx}].lan_services",
+                )
+
+
+def _validate_stb_ports(c: OLTConfig, r: ValidationReport) -> None:
+    """STBConfig.stb_port_ids deve ⊂ ONU.eth_ports."""
+    for o_idx, onu in enumerate(c.onus):
+        if onu.stb is None:
+            continue
+        eth_ids = {e.port_id for e in onu.eth_ports}
+        for pid in onu.stb.stb_port_ids:
+            if pid not in eth_ids:
+                r.add(
+                    "warning",
+                    "STB_PORT_MISSING",
+                    f"ONU {onu.pon_interface}:{onu.onu_id} STBConfig referencia eth {pid} inexistente",
+                    path=f"onus[{o_idx}].stb",
+                )
+
+
+def _validate_multicast_bindings(c: OLTConfig, r: ValidationReport) -> None:
+    """MulticastBinding deve ter MVLAN existente."""
+    vlan_ids = {v.id for v in c.vlans}
+    mcast_vlan = c.multicast.multicast_vlan if c.multicast else None
+    for o_idx, onu in enumerate(c.onus):
+        for mb in onu.multicast_bindings:
+            mvid = mb.multicast_vlan_id or mcast_vlan
+            if mvid and mvid not in vlan_ids:
+                r.add(
+                    "info",
+                    "MULTICAST_VLAN_NOT_IN_VLANS",
+                    f"ONU {onu.pon_interface}:{onu.onu_id} MulticastBinding refere VLAN {mvid} não declarada",
+                    path=f"onus[{o_idx}].multicast_bindings",
+                )
+
+
+def _validate_port_routes(c: OLTConfig, r: ValidationReport) -> None:
+    """PortRoute.src/dst_port_id devem existir em ONU.eth_ports."""
+    for o_idx, onu in enumerate(c.onus):
+        eth_ids = {e.port_id for e in onu.eth_ports}
+        for pr in onu.port_routes:
+            for label, pid in (("src", pr.src_port_id), ("dst", pr.dst_port_id)):
+                if pid and pid not in eth_ids:
+                    r.add(
+                        "info",
+                        "PORT_ROUTE_REFS_UNKNOWN_ETH",
+                        f"ONU {onu.pon_interface}:{onu.onu_id} PortRoute {label}={pid} sem eth correspondente",
+                        path=f"onus[{o_idx}].port_routes",
+                    )
+
+
+# ---------------------------------------------------------------------------
 # Entrypoint
 # ---------------------------------------------------------------------------
 def validate_config(config: OLTConfig) -> ValidationReport:
@@ -291,6 +407,14 @@ def validate_config(config: OLTConfig) -> ValidationReport:
     _validate_gem_to_tcont(config, report)
     _validate_uplink_vlans(config, report)
     _validate_traffic_profile_refs(config, report)
+    # L9 subscriber edge
+    _validate_wan_bindings(config, report)
+    _validate_ssid_radios(config, report)
+    _validate_bridge_groups(config, report)
+    _validate_lan_services(config, report)
+    _validate_stb_ports(config, report)
+    _validate_multicast_bindings(config, report)
+    _validate_port_routes(config, report)
     return report
 
 

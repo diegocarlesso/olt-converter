@@ -28,7 +28,10 @@ class ServicePort(DomainModel):
       - `inbound_traffic_profile` / `outbound_traffic_profile`: nomes de TrafficProfile
     """
 
-    service_port_id: int = Field(..., ge=1)
+    # Huawei MA5800 V100R020 começa em 0, outros vendors em 1.
+    # Aceitar ge=0 para não falhar o parse; o renderer pode renumerar
+    # se o destino exigir.
+    service_port_id: int = Field(..., ge=0)
     pon_interface: str
     onu_id: int = Field(..., ge=0, le=255)
     gem_id: Optional[int] = Field(None, ge=0)

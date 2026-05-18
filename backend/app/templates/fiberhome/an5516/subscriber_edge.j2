@@ -1,0 +1,17 @@
+{# Fiberhome WOS subscriber edge — emite set wancfg, set wifi_serv_wlan, set autho #}
+{% for o in onts_with_edge %}
+{% set slot = o.slot %}
+{% set pon = o.pon_port %}
+{% set onu_id = o.onu_id %}
+{# WAN config #}
+{% for wb in o.wan_bindings %}
+{% if wb.ip_stack_mode %}
+set wancfg sl {{ slot }} {{ pon }} {{ onu_id }} ind {{ wb.binding_id }} ip-stack-mode {{ wb.ip_stack_mode }}{% if wb.ipv6_src_type %} ipv6-src-type {{ wb.ipv6_src_type }}{% endif %}{% if wb.prefix_src_type %} prefix-src-type {{ wb.prefix_src_type }}{% endif %}
+
+{% endif %}
+{% endfor %}
+{# WiFi SSID #}
+{% for ssid in o.ssids %}
+set wifi_serv_wlan slot {{ slot }} pon {{ pon }} onu {{ onu_id }} serv_no 1 index {{ ssid.ssid_id }} ssid {{ 'enable' if ssid.enabled else 'disable' }} {{ ssid.name or 'SSID' }} hide {{ 'enable' if ssid.hidden else 'disable' }} authmode {{ ssid.auth_mode.value if ssid.auth_mode.value else 'wpa2psk' }} encrypt_type {{ ssid.encryption or 'aes' }} wpakey null
+{% endfor %}
+{% endfor %}

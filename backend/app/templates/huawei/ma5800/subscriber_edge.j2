@@ -1,0 +1,23 @@
+{# Huawei subscriber edge — emite ont port native-vlan, ont wan-config, ssid #}
+{% for o in onts_with_edge %}
+{% set slot = o.slot %}
+{% set port = o.port %}
+{% set onu_id = o.onu_id %}
+{# Native VLAN por porta eth #}
+{% for eth in o.eth_ports %}
+{% if eth.native_vlan %}
+ ont port native-vlan {{ slot }} {{ port }} eth {{ eth.port_id }} vlan {{ eth.native_vlan }}{% if eth.priority is not none %} priority {{ eth.priority }}{% endif %}
+
+{% endif %}
+{% endfor %}
+{# WAN bindings #}
+{% for wb in o.wan_bindings %}
+{% if wb.wan_profile_ref %}
+ ont wan-config {{ slot }} {{ port }} ip-index {{ wb.binding_id }} profile-id {{ wb.binding_id }}
+{% endif %}
+{% endfor %}
+{# Port routes #}
+{% for pr in o.port_routes %}
+ ont port route {{ slot }} {{ port }} eth {{ pr.src_port_id }} {{ 'enable' if pr.enabled else 'disable' }}
+{% endfor %}
+{% endfor %}

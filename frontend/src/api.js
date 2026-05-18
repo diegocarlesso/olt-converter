@@ -1,28 +1,57 @@
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: '/api/v1',
-  timeout: 30000,
-});
+const BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000/api/v1';
 
-export const listVendors = () => api.get('/vendors').then((r) => r.data);
+export const http = axios.create({ baseURL: BASE, timeout: 60000 });
 
-export const uploadConfig = (file) => {
-  const fd = new FormData();
-  fd.append('file', file);
-  return api.post('/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } }).then((r) => r.data);
+// Sessions
+export const createSession = async (configText, vendor = null) => {
+  const { data } = await http.post('/sessions', { config_text: configText, vendor });
+  return data;
 };
 
-export const parseConfig = (config_text, vendor) =>
-  api.post('/parse', { config_text, vendor }).then((r) => r.data);
+export const getProjection = async (sid) => {
+  const { data } = await http.get(`/sessions/${sid}/projection`);
+  return data;
+};
 
-export const convertConfig = ({ config_text, source_vendor, target_vendor }) =>
-  api.post('/convert', { config_text, source_vendor, target_vendor }).then((r) => r.data);
+export const getEntity = async (sid, type, id) => {
+  const { data } = await http.get(`/sessions/${sid}/entity/${type}/${encodeURIComponent(id)}`);
+  return data;
+};
 
-export const renderConfig = (config, target_vendor) =>
-  api.post('/render', { config, target_vendor }).then((r) => r.data);
+export const patchEntity = async (sid, patch) => {
+  const { data } = await http.patch(`/sessions/${sid}/entity`, patch);
+  return data;
+};
 
-export const validateConfig = (config) =>
-  api.post('/validate', { config }).then((r) => r.data);
+export const renderTarget = async (sid, vendor) => {
+  const { data } = await http.get(`/sessions/${sid}/render/${vendor}`);
+  return data;
+};
 
-export default api;
+export const getValidation = async (sid) => {
+  const { data } = await http.get(`/sessions/${sid}/validation`);
+  return data;
+};
+
+export const getAudit = async (sid) => {
+  const { data } = await http.get(`/sessions/${sid}/audit`);
+  return data;
+};
+
+export const undoSession = async (sid) => {
+  const { data } = await http.post(`/sessions/${sid}/undo`);
+  return data;
+};
+
+export const redoSession = async (sid) => {
+  const { data } = await http.post(`/sessions/${sid}/redo`);
+  return data;
+};
+
+// Discovery
+export const listVendors = async () => {
+  const { data } = await http.get('/vendors');
+  return data;
+};

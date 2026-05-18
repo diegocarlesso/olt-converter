@@ -17,6 +17,7 @@ from app.parsers.base import ParserResult
 from app.renderers import get_renderer
 from app.services.equivalence import harmonize_for
 from app.services.inference import infer_service_ports
+from app.services.promotion import promote_subscriber_edge
 from app.services.remapping import RemappingTable, remap_for
 from app.services.synthesis import synthesize_dba_profiles, synthesize_traffic_profiles
 from app.services.validator import validate_config, ValidationReport
@@ -87,13 +88,16 @@ def convert(
     synthesized = synthesize_dba_profiles(inferred)
     synthesized = synthesize_traffic_profiles(synthesized)
 
-    #   3) equivalência semântica para o vendor destino
-    harmonized = harmonize_for(synthesized, target_vendor)
+    #   3) L9 promotion: extra_vendor → modelos formais subscriber edge
+    promoted = promote_subscriber_edge(synthesized)
 
-    #   4) ID remapping (determinístico) — ajusta IDs aos ranges do destino
+    #   4) equivalência semântica para o vendor destino
+    harmonized = harmonize_for(promoted, target_vendor)
+
+    #   5) ID remapping (determinístico) — ajusta IDs aos ranges do destino
     remapped, remap_table = remap_for(harmonized, target_vendor)
 
-    #   5) validação sobre o config remapped
+    #   6) validação sobre o config remapped (inclui L9 cross-bindings)
     report = validate_config(remapped)
 
     #   6) render

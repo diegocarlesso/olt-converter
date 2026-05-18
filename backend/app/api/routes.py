@@ -16,7 +16,8 @@ import io
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import PlainTextResponse
-from typing import List
+from pydantic import BaseModel, Field
+from typing import Any, List, Optional
 
 from app.api.schemas import (
     ConvertRequest,
@@ -337,3 +338,145 @@ def export_endpoint(target_vendor: Vendor, config: OLTConfig) -> PlainTextRespon
         rendered,
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+# ---------------------------------------------------------------------------
+# SessionRuntime endpoints (Phase 1 frontend)
+# ---------------------------------------------------------------------------
+from fastapi import HTTPException
+from app.services.session import (
+    create_session as _create_session,
+    get_session as _get_session,
+    drop_session as _drop_session,
+    list_sessions as _list_sessions,
+)
+
+
+class _SessionCreateRequest(BaseModel):
+    config_text: str = Field(..., description="CLI bruto")
+    vendor: Optional[Vendor] = None
+
+
+@router.post("/sessions")
+def session_create(req: _SessionCreateRequest) -> dict:
+    s = _create_session(req.config_text, req.vendor)
+    return {
+        "session_id": s.session_id,
+        "source_vendor": s.source_vendor.value,
+        "hostname": s.config.hostname,
+        "stats": s.config.stats(),
+        "parser_warnings": s.parser_warnings,
+        "unparsed_count": len(s.unparsed_lines),
+    }
+
+
+@router.get("/sessions")
+def session_list() -> list[dict]:
+    return _list_sessions()
+
+
+@router.get("/sessions/{session_id}/projection")
+def session_projection(session_id: str) -> dict:
+    s = _get_session(session_id)
+    if not s:
+        raise HTTPException(404, "session not found")
+    return s.projection()
+
+
+@router.get("/sessions/{session_id}/entity/{entity_type}/{entity_id:path}")
+def session_get_entity(session_id: str, entity_type: str, entity_id: str) -> dict:
+    s = _get_session(session_id)
+    if not s:
+        raise HTTPException(404, "session not found")
+    e = s.get_entity(entity_type, entity_id)
+    if not e:
+        raise HTTPException(404, f"entity {entity_type}/{entity_id} not found")
+    return e
+
+
+class _PatchRequest(BaseModel):
+    op: str = "update"
+    entity_type: str
+    entity_id: str
+    field: str
+    value: Any = None
+
+
+@router.patch("/sessions/{session_id}/entity")
+def session_apply_patch(session_id: str, patch: _PatchRequest) -> dict:
+    s = _get_session(session_id)
+    if not s:
+        raise HTTPException(404, "session not found")
+    result = s.apply_patch(patch.model_dump())
+    if not result.get("ok"):
+        raise HTTPException(400, result.get("error", "patch failed"))
+    return result
+
+
+@router.get("/sessions/{session_id}/render/{vendor}")
+def session_render(session_id: str, vendor: Vendor) -> dict:
+    s = _get_session(session_id)
+    if not s:
+        raise HTTPException(404, "session not found")
+    return s.render(vendor)
+
+
+@router.get("/sessions/{session_id}/validation")
+def session_validation(session_id: str) -> dict:
+    s = _get_session(session_id)
+    if not s:
+        raise HTTPException(404, "session not found")
+    return s.validation()
+
+
+@router.get("/sessions/{session_id}/audit")
+def session_audit(session_id: str) -> list[dict]:
+    s = _get_session(session_id)
+    if not s:
+        raise HTTPException(404, "session not found")
+    return s.audit()
+
+
+@router.post("/sessions/{session_id}/undo")
+def session_undo(session_id: str) -> dict:
+    s = _get_session(session_id)
+    if not s:
+        raise HTTPException(404, "session not found")
+    return s.undo()
+
+
+@router.post("/sessions/{session_id}/redo")
+def session_redo(session_id: str) -> dict:
+    s = _get_session(session_id)
+    if not s:
+        raise HTTPException(404, "session not found")
+    return s.redo()
+
+
+@router.post("/sessions/{session_id}/snapshot")
+def session_snapshot(session_id: str, label: str = "manual") -> dict:
+    s = _get_session(session_id)
+    if not s:
+        raise HTTPException(404, "session not found")
+    return s.snapshot(label)
+
+
+@router.get("/sessions/{session_id}/snapshots")
+def session_snapshots(session_id: str) -> list[dict]:
+    s = _get_session(session_id)
+    if not s:
+        raise HTTPException(404, "session not found")
+    return s.list_snapshots()
+
+
+@router.post("/sessions/{session_id}/restore/{snap_id}")
+def session_restore(session_id: str, snap_id: str) -> dict:
+    s = _get_session(session_id)
+    if not s:
+        raise HTTPException(404, "session not found")
+    return s.restore(snap_id)
+
+
+@router.delete("/sessions/{session_id}")
+def session_drop(session_id: str) -> dict:
+    return {"dropped": _drop_session(session_id)}

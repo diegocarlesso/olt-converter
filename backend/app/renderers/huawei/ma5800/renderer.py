@@ -28,6 +28,7 @@ class HuaweiMA5800Renderer(BaseRenderer):
             self._render("gpon.j2", **ctx),
             self._render("onts.j2", **ctx),
             self._render("service_port.j2", **ctx),
+            self._render("subscriber_edge.j2", **ctx),
             self._render("footer.j2", **ctx),
         ]
         return self._join(*blocks)
@@ -83,6 +84,21 @@ class HuaweiMA5800Renderer(BaseRenderer):
                 }
             )
 
+        # L9 subscriber edge — ONUs com dados promovidos (eth_ports/wan/ssid/routes)
+        onts_with_edge = [
+            {
+                "slot": onu.slot or 0,
+                "port": onu.pon_port or 0,
+                "onu_id": onu.onu_id,
+                "eth_ports": onu.eth_ports,
+                "wan_bindings": onu.wan_bindings,
+                "ssids": onu.ssids,
+                "port_routes": onu.port_routes,
+            }
+            for onu in config.onus
+            if onu.eth_ports or onu.wan_bindings or onu.ssids or onu.port_routes
+        ]
+
         return {
             "config": config,
             "hostname": config.hostname,
@@ -91,6 +107,7 @@ class HuaweiMA5800Renderer(BaseRenderer):
             "uplinks": uplinks,
             "pons": pons,
             "onts": onts,
+            "onts_with_edge": onts_with_edge,
             "service_ports": service_ports,
             "line_profiles": config.line_profiles,
             "service_profiles": config.service_profiles,

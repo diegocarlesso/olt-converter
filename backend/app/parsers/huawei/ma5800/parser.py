@@ -161,6 +161,174 @@ RX_LINK_AGG = re.compile(
 RX_COMMIT = re.compile(r"^\s*commit\s*$", re.IGNORECASE)
 RX_QUIT = re.compile(r"^\s*quit\s*$", re.IGNORECASE)
 
+# Conteúdo nativo de ont-lineprofile gpon:
+#   tcont 1 dba-profile-id 10
+#   gem add 1 eth tcont 1
+#   gem mapping 1 0 vlan 100
+#   gem mapping 2 0 vlan 200
+RX_LP_TCONT_DBA = re.compile(
+    r"^\s*tcont\s+(\d+)\s+dba-profile-id\s+(\d+)", re.IGNORECASE
+)
+RX_LP_GEM_ADD = re.compile(
+    r"^\s*gem\s+add\s+(\d+)\s+(eth|tdm)?\s*tcont\s+(\d+)", re.IGNORECASE
+)
+RX_LP_GEM_MAPPING = re.compile(
+    r"^\s*gem\s+mapping\s+(\d+)\s+(\d+)\s+vlan\s+(\d+)", re.IGNORECASE
+)
+RX_LP_MAPPING_MODE = re.compile(
+    r"^\s*mapping-mode\s+(\S+)", re.IGNORECASE
+)
+# Bloco `onu-type` (Huawei profile global de tipo de ONU)
+RX_ONU_TYPE = re.compile(
+    r"^\s*onu-type\s+(\S+)\s+", re.IGNORECASE
+)
+RX_ONU_TYPE_IF = re.compile(
+    r"^\s*onu-type-if\s+(\S+)\s+", re.IGNORECASE
+)
+# SNMP global
+RX_SNMP_SERVER = re.compile(
+    r"^\s*snmp-server\s+", re.IGNORECASE
+)
+RX_SNMP_AGENT = re.compile(
+    r"^\s*snmp-agent\s+", re.IGNORECASE
+)
+# Fragmentos órfãos (r069, tr069 truncados quando linha é cortada)
+RX_HUAWEI_GARBAGE = re.compile(r"^\s*[a-z0-9]{1,5}\s*$")
+
+# --- Huawei MA5800 runtime ONU commands (top-level, fora de profile) ----
+# ont port route slot port eth port enable
+RX_ONT_PORT_ROUTE_GLOBAL = re.compile(
+    r"^\s*ont\s+port\s+route\s+(\d+)\s+(\d+)\s+eth\s+(\d+)\s+(enable|disable)",
+    re.IGNORECASE,
+)
+# ont port native-vlan slot port eth port vlan vid priority p
+RX_ONT_PORT_NATIVE_VLAN = re.compile(
+    r"^\s*ont\s+port\s+native-vlan\s+(\d+)\s+(\d+)\s+eth\s+(\d+)\s+vlan\s+(\d+)"
+    r"(?:\s+priority\s+(\d+))?",
+    re.IGNORECASE,
+)
+# ont internet-config slot port ip-index N
+RX_ONT_INTERNET_CFG = re.compile(
+    r"^\s*ont\s+internet-config\s+(\d+)\s+(\d+)\s+ip-index\s+(\d+)",
+    re.IGNORECASE,
+)
+# ont wan-config slot port ip-index N profile-id N
+RX_ONT_WAN_CONFIG = re.compile(
+    r"^\s*ont\s+wan-config\s+(\d+)\s+(\d+)\s+ip-index\s+(\d+)\s+profile-id\s+(\d+)",
+    re.IGNORECASE,
+)
+# ont policy-route-config slot port profile-id N
+RX_ONT_POLICY_ROUTE_CFG = re.compile(
+    r"^\s*ont\s+policy-route-config\s+(\d+)\s+(\d+)\s+profile-id\s+(\d+)",
+    re.IGNORECASE,
+)
+# ont ipconfig slot port ip-index N pppoe vlan N priority N user-account username X password Y
+RX_ONT_IPCONFIG = re.compile(
+    r"^\s*ont\s+ipconfig\s+(\d+)\s+(\d+)\s+ip-index\s+(\d+)",
+    re.IGNORECASE,
+)
+# port N ont-password-renew extra N
+RX_PORT_ONT_RENEW = re.compile(
+    r"^\s*port\s+(\d+)\s+ont-password-renew\s+extra\s+(\d+)",
+    re.IGNORECASE,
+)
+# board-template start X
+RX_BOARD_TEMPLATE = re.compile(r"^\s*board-template\s+", re.IGNORECASE)
+# omcc encrypt on/off
+RX_OMCC = re.compile(r"^\s*omcc\s+", re.IGNORECASE)
+# discover-period new-onu N miss-onu N
+RX_DISCOVER_PERIOD = re.compile(r"^\s*discover-period\s+", re.IGNORECASE)
+# linktrap enable/disable
+RX_LINKTRAP = re.compile(r"^\s*linktrap\s+", re.IGNORECASE)
+# tr069-management enable
+RX_TR069_MGMT_CMD = re.compile(r"^\s*tr069-management\s+", re.IGNORECASE)
+# port vlan iphost translation N user-vlan N
+RX_PORT_VLAN_IPHOST = re.compile(
+    r"^\s*port\s+vlan\s+iphost\s+translation\s+(\d+)\s+user-vlan\s+(\d+)",
+    re.IGNORECASE,
+)
+# port vlan eth N translation N user-vlan N (fora de srvprofile context)
+RX_PORT_VLAN_ETH_GLOBAL = re.compile(
+    r"^\s*port\s+vlan\s+eth\s+(\d+)\s+translation\s+(\d+)\s+user-vlan\s+(\d+)",
+    re.IGNORECASE,
+)
+# vlan port eth_0/N mode hybrid (variação que apareceu no MARIANA)
+RX_VLAN_PORT_HYBRID = re.compile(
+    r"^\s*vlan\s+port\s+eth_0/(\d+)\s+mode\s+(hybrid|trunk|access)",
+    re.IGNORECASE,
+)
+# traffic-table index N (referência a traffic-table existente)
+RX_TRAFFIC_REF = re.compile(
+    r"^\s*traffic-table\s+(?:index|name)\s+\S+",
+    re.IGNORECASE,
+)
+# interface vport-X/Y.Z:N (já tratado em ZTE; em Huawei é noise)
+RX_IF_VPORT_HW = re.compile(r"^\s*interface\s+vport-", re.IGNORECASE)
+# name gpon-olt_X/Y/Z (descrição livre)
+RX_NAME_GPON = re.compile(r"^\s*name\s+gpon-olt_", re.IGNORECASE)
+# MAC address table entries: 14ab.02af.b03e N Dynamic xgei_1/...
+RX_MAC_TABLE = re.compile(
+    r"^\s*[0-9a-f]{4}\.[0-9a-f]{4}\.[0-9a-f]{4}\s+\d+\s+(?:Dynamic|Static)",
+    re.IGNORECASE,
+)
+# Linhas de continuação que sobraram (first-login-info, "-----", etc.)
+RX_LEFTOVER_QUOTE = re.compile(r"^\s*[\"-]{1,10}\s*$")
+# monitor uplink-port
+RX_MONITOR_UPLINK = re.compile(r"^\s*monitor\s+uplink-port\s+", re.IGNORECASE)
+
+# Verbos típicos de comando Huawei MA5800 — usados para detectar continuação.
+# IMPORTANTE: não incluir prefixos curtos como "ont-" porque eles fazem
+# `ont-srvprofile-id` (que é PARÂMETRO de `ont add`, não comando)
+# ser tratado como nova linha. Use verbos EXATOS específicos.
+_HUAWEI_COMMAND_VERBS = (
+    "sysname", "system", "terminal", "traffic", "dba-profile",
+    "ont",                       # ont add / ont wan-profile / ont policy-route
+    "ont-srvprofile",            # definição de service profile (top-level)
+    "ont-lineprofile",           # definição de line profile (top-level)
+    "ont-port",                  # ont-port pots/eth/catv/wifi
+    "ont-wan-profile",           # bloco
+    "ont-policy-route-profile",  # bloco
+    "interface", "service-port", "vlan", "port", "board", "board-template",
+    "ip", "static-route",
+    "xpon", "gpon", "commit", "quit", "service", "switch", "link-aggregation",
+    "snmp", "ssh", "ntp", "aaa", "radius", "sysmode", "timezone",
+    "raio-format", "stp", "lldp", "erps", "ddos", "dhcp", "pppoe", "igmp",
+    "multicast", "alarm", "license", "ipv6", "lacp", "monitor", "save", "undo",
+    "tdm",
+)
+
+
+def _join_continuations(text: str) -> str:
+    """
+    Junta linhas continuação em backups Huawei dumped no terminal (que quebra em
+    col 80). Heurística: linha em col 1 que NÃO começa com um verbo de comando
+    nem com header `#`/`[`/`<` é tratada como continuação da anterior.
+    """
+    out: list[str] = []
+    for raw in text.splitlines():
+        if not out:
+            out.append(raw)
+            continue
+        # Header / section marker → sempre nova linha
+        stripped = raw.strip()
+        if not stripped or stripped.startswith(("#", "[", "<")):
+            out.append(raw)
+            continue
+        # Em coluna 1 (sem indentação) — pode ser continuação
+        if raw and not raw.startswith((" ", "\t")):
+            first_token = stripped.split(maxsplit=1)[0].lower()
+            # Match EXATO contra a lista (não use startswith — `ont-srvprofile-id`
+            # quebraria contra `ont-srvprofile`). Verbos com hífen são tokens
+            # inteiros pré-validados.
+            if first_token in _HUAWEI_COMMAND_VERBS:
+                out.append(raw)
+                continue
+            # Caso contrário, é continuação: junta na linha anterior
+            out[-1] = out[-1].rstrip() + " " + stripped
+            continue
+        out.append(raw)
+    return "\n".join(out)
+
 # Convertendo type1..type5 string para enum
 def _dba_type(s: str) -> DBAType:
     s = s.lower().strip()
@@ -175,6 +343,25 @@ def _parse_port_count(token: Optional[str]) -> tuple[int, bool]:
     if parts[0].lower() == "adaptive" and len(parts) > 1:
         return safe_int(parts[1]) or 0, True
     return safe_int(parts[0]) or 0, False
+
+
+def _resolve_onu_for_l9(config, current_pon, group1: int, group2: int):
+    """
+    Within `interface gpon 0/SLOT`, L9 commands are `<verb> PORT ONT_ID ...`.
+    SLOT comes from current_pon. We look up the ONU by (slot, pon_port, onu_id).
+    Fallback (rare backups): if no match, try (slot, pon_port=group1, onu_id=group2)
+    against any ONU regardless of pon_iface.
+    """
+    if current_pon is None or current_pon.slot is None:
+        return None
+    slot = current_pon.slot
+    pon_port, ont_id = group1, group2
+    for o in config.onus:
+        if o.slot == slot and o.pon_port == pon_port and o.onu_id == ont_id:
+            return o
+    return None
+
+
 
 
 @register_parser
@@ -200,6 +387,8 @@ class HuaweiMA5800Parser(BaseParser):
 
     # ------------------------------------------------------------------ API
     def parse(self, config_text: str) -> ParserResult:
+        # Junta linhas de continuação (terminal-wrapped em col 80)
+        config_text = _join_continuations(config_text)
         config = OLTConfig(vendor=self.vendor, model=self.model_family)
         warnings: list[str] = []
         unparsed: list[str] = []
@@ -343,6 +532,63 @@ class HuaweiMA5800Parser(BaseParser):
                 )
                 continue
 
+            # Conteúdo NATIVO de ont-lineprofile (tcont/gem add/gem mapping)
+            if current_lineprofile:
+                if m := RX_LP_TCONT_DBA.match(line):
+                    current_lineprofile.tcont_bindings.append({
+                        "tcont_id": safe_int(m.group(1)) or 0,
+                        "dba_profile_id": safe_int(m.group(2)),
+                    })
+                    continue
+                if m := RX_LP_GEM_ADD.match(line):
+                    current_lineprofile.gemport_bindings.append({
+                        "gem_id": safe_int(m.group(1)) or 0,
+                        "tech": m.group(2) or "eth",
+                        "tcont_id": safe_int(m.group(3)) or 0,
+                    })
+                    continue
+                if m := RX_LP_GEM_MAPPING.match(line):
+                    current_lineprofile.mappers.append({
+                        "gem_id": safe_int(m.group(1)) or 0,
+                        "queue": safe_int(m.group(2)) or 0,
+                        "vlan_id": safe_int(m.group(3)) or 0,
+                    })
+                    continue
+                if RX_LP_MAPPING_MODE.match(line):
+                    continue   # mapping-mode é metadado
+
+            # Conteúdo runtime dentro de srvprofile/wanprofile/lineprofile:
+            # description / ont port route / service / wan / ssid / pppoe
+            current_profile_ctx = (
+                current_srvprofile or current_lineprofile or current_wanprofile
+            )
+            if current_profile_ctx:
+                low_strip = stripped.lower()
+                if low_strip.startswith(("description ", "name ")):
+                    # Atribui description ao profile atual se ainda não existe
+                    rest = stripped.split(maxsplit=1)
+                    if len(rest) > 1 and not getattr(current_profile_ctx, "description", None):
+                        try:
+                            setattr(current_profile_ctx, "description", rest[1].strip())
+                        except Exception:  # noqa: BLE001
+                            pass
+                    continue
+                if low_strip.startswith(("ont port route ", "ont port native-vlan ",
+                                         "service ", "wan ", "ssid ", "pppoe ",
+                                         "static-config", "ip-host", "port-list",
+                                         "loop-detect", "dhcp-ip", "ipv4-source",
+                                         "tr069", "lan-port-pvc")):
+                    # captura em raw_meta — preserva para auditoria sem modelar
+                    bag = getattr(current_profile_ctx, "extra_vendor", None)
+                    if bag is None:
+                        bag = {}
+                        try:
+                            current_profile_ctx.extra_vendor = bag
+                        except Exception:  # noqa: BLE001
+                            pass
+                    bag.setdefault("raw_lines", []).append(stripped)
+                    continue
+
             if RX_COMMIT.match(line) or RX_QUIT.match(line):
                 # encerra qualquer profile aberto
                 current_srvprofile = None
@@ -431,24 +677,26 @@ class HuaweiMA5800Parser(BaseParser):
                 continue
 
             # ont add (provisioning)
+            # Huawei MA5800 syntax:
+            #   <inside `interface gpon 0/SLOT`>
+            #   ont add PON_PORT ONT_ID sn-auth "SN" omci ont-lineprofile-id ... ont-srvprofile-id ...
+            # SLOT comes from current_pon context. m.group(1) = PON_PORT, m.group(2) = ONT_ID.
             if m := RX_ONT_ADD_OMCI.match(line):
-                slot = safe_int(m.group(1)) or 0
-                pon_port = safe_int(m.group(2)) or 0
-                pon_iface = f"gpon 0/{slot}"
-                # Tenta achar pon mais específica '0/slot/port'?  Em Huawei,
-                # 'interface gpon 0/X' agrupa o slot, mas 'ont add X Y' usa
-                # Y como onu_id ou como ponp depending on context...
-                # Aqui Y é tipicamente o onu_id dentro do slot, então usamos
-                # interface 'gpon 0/slot'.
-                pon = next((p for p in config.pons if p.interface == pon_iface), None)
+                pon_port = safe_int(m.group(1)) or 0
+                ont_id = safe_int(m.group(2)) or 0
+                slot = current_pon.slot if current_pon and current_pon.slot is not None else 0
+                pon_iface = current_pon.interface if current_pon else f"gpon 0/{slot}"
+                pon = current_pon
+                if pon is None:
+                    pon = next((p for p in config.pons if p.interface == pon_iface), None)
                 if pon is None:
                     pon = PON(interface=pon_iface, slot=slot)
                     config.pons.append(pon)
                 onu = ONU(
                     pon_interface=pon_iface,
-                    onu_id=pon_port,
+                    onu_id=ont_id,
                     slot=slot,
-                    pon_port=None,
+                    pon_port=pon_port,
                     serial_number=m.group(3),
                     line_profile_id=safe_int(m.group(4)),
                     service_profile_id=safe_int(m.group(5)),
@@ -495,9 +743,139 @@ class HuaweiMA5800Parser(BaseParser):
                 )
                 continue
 
+            # ---------------- Huawei runtime ONU bindings
+            # Inside `interface gpon 0/SLOT`, commands are `<verb> PORT ONT_ID ...`
+            # ont port route port ont_id eth N enable
+            if m := RX_ONT_PORT_ROUTE_GLOBAL.match(line):
+                g1 = safe_int(m.group(1)) or 0
+                g2 = safe_int(m.group(2)) or 0
+                eth = safe_int(m.group(3))
+                enabled = m.group(4).lower() == "enable"
+                onu = _resolve_onu_for_l9(config, current_pon, g1, g2)
+                if onu is not None and eth is not None:
+                    onu.extra_vendor.setdefault("port_routes", []).append(
+                        {"eth": eth, "enabled": enabled}
+                    )
+                continue
+            # ont port native-vlan port ont_id eth N vlan V priority P
+            if m := RX_ONT_PORT_NATIVE_VLAN.match(line):
+                g1 = safe_int(m.group(1)) or 0
+                g2 = safe_int(m.group(2)) or 0
+                eth_id = safe_int(m.group(3)) or 1
+                vid = safe_int(m.group(4))
+                onu = _resolve_onu_for_l9(config, current_pon, g1, g2)
+                if onu is not None and vid:
+                    from app.models import EthernetPort
+                    eth = next(
+                        (e for e in onu.eth_ports if e.port_id == eth_id), None
+                    )
+                    if eth is None:
+                        eth = EthernetPort(port_id=eth_id)
+                        onu.eth_ports.append(eth)
+                    eth.native_vlan = vid
+                continue
+            # ont internet-config / wan-config / policy-route-config / ipconfig
+            # Populam extra_vendor para promotion engine materializar WANBinding L9.
+            if m := RX_ONT_WAN_CONFIG.match(line):
+                g1 = safe_int(m.group(1)) or 0; g2 = safe_int(m.group(2)) or 0
+                ip_index = safe_int(m.group(3)); profile_id = safe_int(m.group(4))
+                onu = _resolve_onu_for_l9(config, current_pon, g1, g2)
+                if onu is not None:
+                    onu.extra_vendor.setdefault("wan_config_hw", []).append({"ip_index": ip_index, "profile_id": profile_id})
+                continue
+            if m := RX_ONT_INTERNET_CFG.match(line):
+                g1 = safe_int(m.group(1)) or 0; g2 = safe_int(m.group(2)) or 0
+                ip_index = safe_int(m.group(3))
+                onu = _resolve_onu_for_l9(config, current_pon, g1, g2)
+                if onu is not None:
+                    onu.extra_vendor.setdefault("internet_config_hw", []).append({"ip_index": ip_index})
+                continue
+            if m := RX_ONT_POLICY_ROUTE_CFG.match(line):
+                g1 = safe_int(m.group(1)) or 0; g2 = safe_int(m.group(2)) or 0
+                profile_id = safe_int(m.group(3))
+                onu = _resolve_onu_for_l9(config, current_pon, g1, g2)
+                if onu is not None:
+                    onu.extra_vendor.setdefault("policy_route_config_hw", []).append({"profile_id": profile_id})
+                continue
+            if m := RX_ONT_IPCONFIG.match(line):
+                g1 = safe_int(m.group(1)) or 0; g2 = safe_int(m.group(2)) or 0
+                ip_index = safe_int(m.group(3))
+                onu = _resolve_onu_for_l9(config, current_pon, g1, g2)
+                if onu is not None:
+                    # Tenta detectar pppoe inline (user-account username "X" password "Y")
+                    is_pppoe = " pppoe " in line.lower()
+                    user = None
+                    if is_pppoe:
+                        import re as _re
+                        um = _re.search(r"user-account\s+username\s+\"([^\"]+)\"", line, _re.IGNORECASE)
+                        if um:
+                            user = um.group(1)
+                    onu.extra_vendor.setdefault("ipconfig_hw", []).append({
+                        "ip_index": ip_index,
+                        "mode": "pppoe" if is_pppoe else "static_or_dhcp",
+                        "pppoe_user": user,
+                    })
+                continue
+            # port N ont-password-renew
+            if RX_PORT_ONT_RENEW.match(line):
+                continue
+            # board-template / omcc / discover-period / linktrap / tr069-management
+            if (RX_BOARD_TEMPLATE.match(line) or RX_OMCC.match(line)
+                    or RX_DISCOVER_PERIOD.match(line) or RX_LINKTRAP.match(line)
+                    or RX_TR069_MGMT_CMD.match(line)):
+                continue
+            # port-vlan globais (fora de srvprofile)
+            if RX_PORT_VLAN_IPHOST.match(line) or RX_PORT_VLAN_ETH_GLOBAL.match(line):
+                continue
+            # vlan port eth_0/N mode hybrid
+            if RX_VLAN_PORT_HYBRID.match(line):
+                continue
+            # traffic-table referência
+            if RX_TRAFFIC_REF.match(line):
+                continue
+            # interface vport-X/Y.Z:N
+            if RX_IF_VPORT_HW.match(line):
+                continue
+            # name gpon-olt_X/Y/Z (descrição da PON)
+            if RX_NAME_GPON.match(line):
+                continue
+            # MAC address table entries
+            if RX_MAC_TABLE.match(line):
+                continue
+            # Restos de continuações (first-login-info "-----", etc.)
+            if RX_LEFTOVER_QUOTE.match(line):
+                continue
+            # monitor uplink-port traffic/pppoe
+            if RX_MONITOR_UPLINK.match(line):
+                continue
+
+            # ---------------- SNMP / onu-type / fragments
+            if RX_SNMP_SERVER.match(line) or RX_SNMP_AGENT.match(line):
+                # captura permissiva — SNMP em SNMPConfig será refinado depois
+                if config.snmp is None:
+                    from app.models import SNMPConfig
+                    config.snmp = SNMPConfig()
+                # Não modelado em detalhe agora, mas registra
+                continue
+            if RX_ONU_TYPE.match(line) or RX_ONU_TYPE_IF.match(line):
+                # Bloco onu-type — informativo, não modelado
+                continue
+            if RX_HUAWEI_GARBAGE.match(line):
+                continue   # fragmentos órfãos r069, tr069 truncado
+
             # ---------------- noise / unhandled
             if stripped and not stripped.startswith(("#", "//", "!")):
                 unparsed.append(line)
+
+        # Pós-resolução: line-profile.tcont_bindings com dba_profile_id sem
+        # dba_profile_name → lookup pelo id e popular o nome
+        dba_id_to_name = {d.profile_id: d.name for d in config.dba_profiles}
+        for lp in config.line_profiles:
+            for binding in lp.tcont_bindings:
+                if "dba_profile_id" in binding and not binding.get("dba_profile_name"):
+                    name = dba_id_to_name.get(binding["dba_profile_id"])
+                    if name:
+                        binding["dba_profile_name"] = name
 
         config.parse_warnings = warnings
         config.raw_unparsed = unparsed

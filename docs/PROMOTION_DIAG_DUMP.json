@@ -1,0 +1,352 @@
+{
+  "MG-GVS-OLT-MARIANA-X7.txt": [
+    {
+      "label": "1) post-parse",
+      "onus_total": 1811,
+      "onus_with_any": 88,
+      "extra_vendor_counts": {
+        "port_routes": 352
+      },
+      "formal_counts": {
+        "radios": 0,
+        "ssids": 0,
+        "bridge_groups": 0,
+        "wan_bindings": 0,
+        "port_routes": 0,
+        "lan_services": 0,
+        "multicast_bindings": 0
+      },
+      "sample_onus": [
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 1,
+          "serial": "48575443FF1D14A5",
+          "extra_vendor_keys": [
+            "internet_config_hw",
+            "ipconfig_hw",
+            "policy_route_config_hw",
+            "port_routes",
+            "wan_config_hw"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        },
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 27,
+          "serial": "48575443CDBEF6B3",
+          "extra_vendor_keys": [
+            "port_routes"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        },
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 51,
+          "serial": "4857544387F7F8AB",
+          "extra_vendor_keys": [
+            "internet_config_hw",
+            "ipconfig_hw",
+            "policy_route_config_hw",
+            "port_routes",
+            "wan_config_hw"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "2) post-inference",
+      "onus_total": 1811,
+      "onus_with_any": 88,
+      "extra_vendor_counts": {
+        "port_routes": 352
+      },
+      "formal_counts": {
+        "radios": 0,
+        "ssids": 0,
+        "bridge_groups": 0,
+        "wan_bindings": 0,
+        "port_routes": 0,
+        "lan_services": 0,
+        "multicast_bindings": 0
+      },
+      "sample_onus": [
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 1,
+          "serial": "48575443FF1D14A5",
+          "extra_vendor_keys": [
+            "internet_config_hw",
+            "ipconfig_hw",
+            "policy_route_config_hw",
+            "port_routes",
+            "wan_config_hw"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        },
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 27,
+          "serial": "48575443CDBEF6B3",
+          "extra_vendor_keys": [
+            "port_routes"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        },
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 51,
+          "serial": "4857544387F7F8AB",
+          "extra_vendor_keys": [
+            "internet_config_hw",
+            "ipconfig_hw",
+            "policy_route_config_hw",
+            "port_routes",
+            "wan_config_hw"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "3) post-synthesis",
+      "onus_total": 1811,
+      "onus_with_any": 88,
+      "extra_vendor_counts": {
+        "port_routes": 352
+      },
+      "formal_counts": {
+        "radios": 0,
+        "ssids": 0,
+        "bridge_groups": 0,
+        "wan_bindings": 0,
+        "port_routes": 0,
+        "lan_services": 0,
+        "multicast_bindings": 0
+      },
+      "sample_onus": [
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 1,
+          "serial": "48575443FF1D14A5",
+          "extra_vendor_keys": [
+            "internet_config_hw",
+            "ipconfig_hw",
+            "policy_route_config_hw",
+            "port_routes",
+            "wan_config_hw"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        },
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 27,
+          "serial": "48575443CDBEF6B3",
+          "extra_vendor_keys": [
+            "port_routes"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        },
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 51,
+          "serial": "4857544387F7F8AB",
+          "extra_vendor_keys": [
+            "internet_config_hw",
+            "ipconfig_hw",
+            "policy_route_config_hw",
+            "port_routes",
+            "wan_config_hw"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "4) post-promotion",
+      "onus_total": 1811,
+      "onus_with_any": 88,
+      "extra_vendor_counts": {
+        "port_routes": 352
+      },
+      "formal_counts": {
+        "radios": 0,
+        "ssids": 0,
+        "bridge_groups": 0,
+        "wan_bindings": 156,
+        "port_routes": 352,
+        "lan_services": 0,
+        "multicast_bindings": 0
+      },
+      "sample_onus": [
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 1,
+          "serial": "48575443FF1D14A5",
+          "extra_vendor_keys": [
+            "internet_config_hw",
+            "ipconfig_hw",
+            "policy_route_config_hw",
+            "port_routes",
+            "wan_config_hw"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        },
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 27,
+          "serial": "48575443CDBEF6B3",
+          "extra_vendor_keys": [
+            "port_routes"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        },
+        {
+          "pon_interface": "gpon 0/1",
+          "onu_id": 51,
+          "serial": "4857544387F7F8AB",
+          "extra_vendor_keys": [
+            "internet_config_hw",
+            "ipconfig_hw",
+            "policy_route_config_hw",
+            "port_routes",
+            "wan_config_hw"
+          ],
+          "extra_vendor_sample": {
+            "port_routes": [
+              {
+                "eth": 1,
+                "enabled": true
+              },
+              {
+                "eth": 2,
+                "enabled": true
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

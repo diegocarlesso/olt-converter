@@ -58,10 +58,13 @@ class RemappingPolicy:
     gem_id_min: int = 0
     gem_id_max: int = 4095
     vlan_reserved: tuple[int, ...] = ()           # VLANs reservadas pelo vendor
+    # Range padrão de profile-ids: MA5800 real aceita até 512; Fiberhome
+    # cs onu profile aceita 10000+. Apertar demais gera collisions
+    # desnecessárias. Cada vendor pode sobrescrever para o limite real.
     line_profile_id_min: int = 1
-    line_profile_id_max: int = 99
+    line_profile_id_max: int = 512
     service_profile_id_min: int = 1
-    service_profile_id_max: int = 99
+    service_profile_id_max: int = 512
 
 
 POLICIES: dict[tuple[Vendor, str], RemappingPolicy] = {
@@ -69,7 +72,7 @@ POLICIES: dict[tuple[Vendor, str], RemappingPolicy] = {
     (Vendor.HUAWEI, "MA5800"): RemappingPolicy(
         vendor=Vendor.HUAWEI, model="MA5800",
         onu_id_min=0, onu_id_max=127,
-        line_profile_id_max=200, service_profile_id_max=200,
+        line_profile_id_max=512, service_profile_id_max=512,
         vlan_reserved=(4093,),
     ),
     (Vendor.HUAWEI, "MA5680T"): RemappingPolicy(

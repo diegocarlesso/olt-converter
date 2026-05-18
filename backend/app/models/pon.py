@@ -54,7 +54,19 @@ class GEMPort(DomainModel):
 
 
 class EthernetPort(DomainModel):
-    """Porta UNI ethernet dentro de uma ONU/ONT (eth 1, eth 2, …)."""
+    """
+    Porta UNI ethernet dentro de uma ONU/ONT (eth 1, eth 2, …).
+
+    Expandida pela camada L9 (subscriber edge):
+      - `bridge_mode`: bridge / router / mixed
+      - `bridge_group_id`: vínculo a BridgeGroup
+      - `wan_binding_id`: vínculo a WANBinding
+      - `lan_service_name`: vínculo a LANService
+      - `isolation_enabled`: client isolation L2
+      - `loop_detect_enabled`: detecção de loop L2
+      - `dhcp_source`: from-onu | from-internet (ZTE)
+      - `is_stb`: porta dedicada a STB IPTV
+    """
 
     port_id: int = Field(..., ge=1, le=8)
     admin_state: AdminState = AdminState.UP
@@ -64,7 +76,17 @@ class EthernetPort(DomainModel):
     untagged_vlans: list[int] = Field(default_factory=list)
     translation_vlan: Optional[int] = Field(None, ge=1, le=4094)
     user_vlan: Optional[int] = Field(None, ge=1, le=4094)
+    priority: Optional[int] = Field(None, ge=0, le=7)
     description: Optional[str] = None
+    # L9 subscriber edge bindings
+    bridge_mode: Optional[str] = None     # str para evitar import circular; enum em subscriber_edge
+    bridge_group_id: Optional[int] = None
+    wan_binding_id: Optional[int] = None
+    lan_service_name: Optional[str] = None
+    isolation_enabled: bool = False
+    loop_detect_enabled: bool = False
+    dhcp_source: Optional[str] = None     # "from-onu" | "from-internet"
+    is_stb: bool = False
 
 
 class PONOpticalParams(DomainModel):
@@ -125,6 +147,17 @@ class ONU(DomainModel):
     tconts: list[TCONT] = Field(default_factory=list)
     gemports: list[GEMPort] = Field(default_factory=list)
     eth_ports: list[EthernetPort] = Field(default_factory=list)
+
+    # L9 subscriber edge — modelos formais (preenchidos pelo promotion engine)
+    # Importados lazily para evitar ciclo (subscriber_edge usa base.DomainModel)
+    radios: list = Field(default_factory=list, description="list[WiFiRadio]")
+    ssids: list = Field(default_factory=list, description="list[WiFiSSID]")
+    bridge_groups: list = Field(default_factory=list, description="list[BridgeGroup]")
+    lan_services: list = Field(default_factory=list, description="list[LANService]")
+    wan_bindings: list = Field(default_factory=list, description="list[WANBinding]")
+    multicast_bindings: list = Field(default_factory=list, description="list[MulticastBinding]")
+    port_routes: list = Field(default_factory=list, description="list[PortRoute]")
+    stb: Optional[Any] = Field(default=None, description="Optional[STBConfig]")
 
     # Capacidades habilitadas
     wifi_enabled: bool = False

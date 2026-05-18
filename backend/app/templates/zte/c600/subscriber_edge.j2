@@ -1,0 +1,26 @@
+{# ZTE subscriber edge — dentro do bloco pon-onu-mng emite vlan port eth, ssid, wan, pppoe #}
+{% for o in onts_with_edge %}
+{% set pon_path = o.pon_path %}
+{% set onu_id = o.onu_id %}
+pon-onu-mng gpon-onu_{{ pon_path }}:{{ onu_id }}
+{# vlan port eth_0/N mode tag vlan N #}
+{% for eth in o.eth_ports %}
+{% if eth.native_vlan %}
+ vlan port eth_0/{{ eth.port_id }} mode tag vlan {{ eth.native_vlan }}
+{% endif %}
+{% for vid in eth.tagged_vlans %}
+ vlan port eth_0/{{ eth.port_id }} mode tag vlan {{ vid }}
+{% endfor %}
+{% endfor %}
+{# WAN bindings — PPPoE inline #}
+{% for wb in o.wan_bindings %}
+{% if wb.mode == 'pppoe' %}
+ pppoe {{ wb.binding_id }} nat {{ 'enable' if wb.nat_enabled else 'disable' }} release-timer internal user {{ wb.pppoe_user or 'unknown' }} password null
+{% endif %}
+{% endfor %}
+{# SSID auth #}
+{% for ssid in o.ssids %}
+ ssid auth wpa wifi_0/{{ ssid.radio_id }} {{ ssid.auth_mode.value if ssid.auth_mode.value else 'wpa2-psk' }} encrypt {{ ssid.encryption or 'aes' }} key null
+{% endfor %}
+!
+{% endfor %}

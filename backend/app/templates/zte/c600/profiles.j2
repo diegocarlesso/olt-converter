@@ -6,10 +6,10 @@ gpon-profile tcont {{ dba.name | safe_name }} type {{ dba.type_num }}{% if dba.m
 {% for lp in line_profiles %}
 gpon-onu profile line-profile {{ lp.name | safe_name }}
 {% for tb in lp.tcont_bindings %}
-  tcont {{ tb.tcont_id }} profile {{ tb.dba_profile_name }}
+  tcont {{ tb.get('tcont_id', 0) }} profile {{ tb.get('dba_profile_name') or ('id-' ~ tb.get('dba_profile_id', 0)) }}
 {% endfor %}
 {% for gb in lp.gemport_bindings %}
-  gemport {{ gb.gem_id }} tcont {{ gb.tcont_id }}
+  gemport {{ gb.get('gem_id', 0) }} tcont {{ gb.get('tcont_id', 0) }}
 {% endfor %}
 $
 {% endfor %}

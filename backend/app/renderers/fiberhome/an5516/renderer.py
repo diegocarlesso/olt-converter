@@ -25,6 +25,7 @@ class FiberhomeAN5516Renderer(BaseRenderer):
             self._render("interfaces.j2", **ctx),
             self._render("pon.j2", **ctx),
             self._render("whitelist.j2", **ctx),
+            self._render("subscriber_edge.j2", **ctx),
         ]
         return self._join(*blocks)
 
@@ -59,4 +60,17 @@ class FiberhomeAN5516Renderer(BaseRenderer):
             "static_routes": config.static_routes,
             "radius_servers": config.radius_servers,
             "users": config.users,
+            # L9 subscriber edge
+            "onts_with_edge": [
+                {
+                    "slot": onu.slot or 0,
+                    "pon_port": onu.pon_port or 0,
+                    "onu_id": onu.onu_id,
+                    "eth_ports": onu.eth_ports,
+                    "wan_bindings": onu.wan_bindings,
+                    "ssids": onu.ssids,
+                }
+                for onu in config.onus
+                if onu.wan_bindings or onu.ssids
+            ],
         }

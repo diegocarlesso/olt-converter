@@ -32,6 +32,7 @@ class ProvenanceSource(str, Enum):
     PARSER = "parser"            # extraída diretamente do CLI bruto
     INFERENCE = "inference"      # inferida combinando múltiplos sinais
     SYNTHESIS = "synthesis"      # sintetizada a partir de outras entidades
+    PROMOTION = "promotion"      # promovida de extra_vendor -> modelo formal L9
     MANUAL = "manual"            # editada pelo operador no editor visual
     DEFAULT = "default"          # fallback explícito (operador deve revisar)
     IMPORT = "import"            # veio de arquivo complementar (servport dump etc.)
@@ -41,15 +42,6 @@ class Provenance(DomainModel):
     """
     Bloco de metadado anexado a uma entidade para registrar como ela foi
     obtida.
-
-    Convenção de `confidence`:
-
-      1.00       : valor literal no backup, sem ambiguidade
-      0.80-0.99  : inferência baseada em múltiplos sinais convergentes
-      0.50-0.79  : inferência baseada em um único sinal forte
-      0.30-0.49  : palpite educado (nome do serviço, padrão de ISP)
-      0.10-0.29  : default explícito + warning
-      0.00-0.09  : completamente sintético / placeholder
     """
 
     source: ProvenanceSource = ProvenanceSource.PARSER
@@ -73,7 +65,6 @@ class Provenance(DomainModel):
 
     @classmethod
     def parsed(cls, origin_file: Optional[str] = None) -> "Provenance":
-        """Helper: entidade extraída literalmente de uma linha CLI."""
         return cls(
             source=ProvenanceSource.PARSER,
             confidence=1.0,
@@ -102,7 +93,7 @@ class Provenance(DomainModel):
         cls,
         confidence: float,
         reason: str,
-        signals: list[str] | None = None,
+        signals: Optional[list[str]] = None,
     ) -> "Provenance":
         return cls(
             source=ProvenanceSource.SYNTHESIS,
@@ -119,6 +110,21 @@ class Provenance(DomainModel):
             confidence=0.15,
             reason=reason,
             needs_review=True,
+        )
+
+    @classmethod
+    def promoted(
+        cls,
+        confidence: float,
+        reason: str,
+        signals: Optional[list[str]] = None,
+    ) -> "Provenance":
+        return cls(
+            source=ProvenanceSource.PROMOTION,
+            confidence=confidence,
+            reason=reason,
+            signals=signals or [],
+            needs_review=confidence < 0.7,
         )
 
 

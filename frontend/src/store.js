@@ -1,35 +1,47 @@
 import { create } from 'zustand';
 
-export const useStore = create((set) => ({
-  sourceText: '',
-  sourceVendor: null,
-  targetVendor: 'zte',
-  vendors: [],
-  parsedConfig: null,
-  renderedConfig: '',
-  diff: '',
-  validation: null,
-  warnings: [],
-  unparsedLines: [],
-  stats: {},
-  loading: false,
-  logs: [],
+/**
+ * Frontend mantém APENAS view-state. O OLTConfig vive no backend.
+ * Selection, expanded tree, filtros, target preview, drawer visibility.
+ */
+export const useStore = create((set, get) => ({
+  // session
+  sessionId: null,
+  setSessionId: (id) => set({ sessionId: id }),
+  resetSession: () => set({
+    sessionId: null, selection: null, expandedGroups: { vlans: true, pons: true, service_ports: false, uplinks: true, profiles: false },
+    filter: '', filterSource: 'all', filterNeedsReview: false, targetVendor: 'fiberhome',
+  }),
 
-  setSourceText: (sourceText) => set({ sourceText }),
-  setSourceVendor: (sourceVendor) => set({ sourceVendor }),
-  setTargetVendor: (targetVendor) => set({ targetVendor }),
-  setVendors: (vendors) => set({ vendors }),
-  setParsed: (parsedConfig) => set({ parsedConfig }),
-  setRendered: (renderedConfig) => set({ renderedConfig }),
-  setDiff: (diff) => set({ diff }),
-  setValidation: (validation) => set({ validation }),
-  setWarnings: (warnings) => set({ warnings }),
-  setUnparsed: (unparsedLines) => set({ unparsedLines }),
-  setStats: (stats) => set({ stats }),
-  setLoading: (loading) => set({ loading }),
-  appendLog: (entry) =>
-    set((state) => ({
-      logs: [{ id: Date.now() + Math.random(), at: new Date().toISOString(), ...entry }, ...state.logs].slice(0, 200),
-    })),
-  clearLogs: () => set({ logs: [] }),
+  // selection
+  selection: null,  // { entity_type, entity_id }
+  setSelection: (sel) => set({ selection: sel }),
+
+  // explorer state
+  expandedGroups: { vlans: true, pons: true, service_ports: false, uplinks: true, profiles: false },
+  toggleGroup: (k) => set((s) => ({ expandedGroups: { ...s.expandedGroups, [k]: !s.expandedGroups[k] } })),
+  expandedPons: {},  // pon_iface -> bool
+  togglePon: (k) => set((s) => ({ expandedPons: { ...s.expandedPons, [k]: !s.expandedPons[k] } })),
+
+  // filters
+  filter: '',
+  setFilter: (v) => set({ filter: v }),
+  filterSource: 'all',  // all|parser|inference|synthesis|promotion|manual|default
+  setFilterSource: (v) => set({ filterSource: v }),
+  filterNeedsReview: false,
+  setFilterNeedsReview: (v) => set({ filterNeedsReview: v }),
+
+  // preview
+  targetVendor: 'fiberhome',
+  setTargetVendor: (v) => set({ targetVendor: v }),
+  previewMode: 'cli',  // cli | diff
+  setPreviewMode: (v) => set({ previewMode: v }),
+
+  // recent sessions (persisted to localStorage manualmente)
+  recentSessions: JSON.parse(localStorage.getItem('olt:recent') || '[]'),
+  pushRecent: (entry) => set((s) => {
+    const next = [entry, ...s.recentSessions.filter(r => r.session_id !== entry.session_id)].slice(0, 10);
+    localStorage.setItem('olt:recent', JSON.stringify(next));
+    return { recentSessions: next };
+  }),
 }));

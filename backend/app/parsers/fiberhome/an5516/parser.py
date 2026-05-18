@@ -128,6 +128,76 @@ RX_WHITE_PHY = re.compile(
 RX_QOS_ATTACH = re.compile(
     r"^\s*set\s+slot\s+(\d+)\s+port\s+(\d+)\s+attach(?:\s+(.+))?", re.IGNORECASE
 )
+# Per-ONU service bandwidth — GAP-2 REAL FIX:
+#   set service_ba sl 1 p 5 o 26 ty data fix 0 as 10240 max 1024000
+#   set service_ba sl 1 p 5 o 26 ty iptv fix 0 as 51200 max 102400
+#   set service_ba sl 1 p 5 o 26 ty voi  fix 1024 as 1024 max 1024
+RX_SERVICE_BA = re.compile(
+    r"^\s*set\s+service_ba\s+sl\s+(\d+)\s+p\s+(\d+)\s+o\s+(\d+)\s+ty\s+(\S+)\s+"
+    r"fix\s+(\d+)\s+as\s+(\d+)\s+max\s+(\d+)",
+    re.IGNORECASE,
+)
+# ONU → pon_type binding (gpon/xgpon)
+#   set onu_pon_type slot 1 pon 5 onu 26 pon_type 1
+RX_ONU_PON_TYPE = re.compile(
+    r"^\s*set\s+onu_pon_type\s+slot\s+(\d+)\s+pon\s+(\d+)\s+onu\s+(\d+)\s+pon_type\s+(\d+)",
+    re.IGNORECASE,
+)
+# ONU → port_separate (LAN isolation)
+RX_ONU_PORT_SEPARATE = re.compile(
+    r"^\s*set\s+port_separate\s+slot\s+(\d+)\s+pon\s+(\d+)\s+onu\s+(\d+)\s+separate\s+(\S+)",
+    re.IGNORECASE,
+)
+# Per-ONU WiFi config (existe? captura por ONU para futura modelagem SSID)
+RX_ONU_WIFI = re.compile(
+    r"^\s*set\s+wifi_serv_cfg\s+slot\s+(\d+)\s+pon\s+(\d+)\s+onu\s+(\d+)\s+",
+    re.IGNORECASE,
+)
+# Per-ONU SSID + WiFi WLAN config — REGEX PERMISSIVO
+# Aceita qualquer combinação de campos após o (slot, pon, onu, serv_no, index)
+RX_ONU_SSID = re.compile(
+    r"^\s*set\s+wifi_serv_wlan\s+slot\s+(\d+)\s+pon\s+(\d+)\s+onu\s+(\d+)\s+"
+    r"serv_no\s+(\d+)\s+index\s+(\d+)\s*(.*)$",
+    re.IGNORECASE,
+)
+# Extrai campos do trailer
+_RX_SSID_NAME = re.compile(r"ssid\s+\S+\s+(\S+)", re.IGNORECASE)
+_RX_AUTHMODE = re.compile(r"authmode\s+(\S+)", re.IGNORECASE)
+_RX_ENCRYPT = re.compile(r"encrypt_type\s+(\S+)", re.IGNORECASE)
+_RX_WPAKEY = re.compile(r"wpakey\s+(\S+)", re.IGNORECASE)
+# Per-ONU WPS
+RX_ONU_WPS = re.compile(
+    r"^\s*onu\s+wps-config\s+slot\s+(\d+)\s+pon\s+(\d+)\s+onu\s+(\d+)\s+switch\s+(\S+)",
+    re.IGNORECASE,
+)
+# ONU authorization alternativa (Fiberhome WOS — equivalente a set white phy addr)
+#   set autho sl 1 p 5 ty 5506-04-F1 o 26 phy FHTT04c6ba10 pas null
+RX_AUTHO = re.compile(
+    r"^\s*set\s+autho\s+sl\s+(\d+)\s+p\s+(\d+)\s+ty\s+(\S+)\s+o\s+(\d+)\s+"
+    r"phy\s+(\S+)\s+pas\s+(\S+)",
+    re.IGNORECASE,
+)
+# Per-ONU WAN config — REGEX PERMISSIVO (captura sl/N/N/N + ind/N + trailer livre)
+RX_WANCFG = re.compile(
+    r"^\s*set\s+wancfg\s+sl\s+(\d+)\s+(\d+)\s+(\d+)\s+ind\s+(\d+)\s*(.*)$",
+    re.IGNORECASE,
+)
+# Helpers para extrair campos do trailer wancfg
+_RX_IP_STACK = re.compile(r"ip-stack-mode\s+(\S+)", re.IGNORECASE)
+_RX_IPV6_SRC = re.compile(r"ipv6-src-type\s+(\S+)", re.IGNORECASE)
+_RX_PREFIX_SRC = re.compile(r"prefix-src-type\s+(\S+)", re.IGNORECASE)
+# Per-ONU bandwidth alternativa (set ep sl N pon N onu N band ...)
+RX_SET_EP = re.compile(
+    r"^\s*set\s+ep\s+sl\s+(\d+)\s+pon\s+(\d+)\s+onu\s+(\d+)\s+band\s+"
+    r"upstream_band\s+(\d+)\s+downstream_band\s+(\d+)"
+    r"(?:\s+upstream_assured\s+(\d+))?(?:\s+upstream_fix\s+(\d+))?",
+    re.IGNORECASE,
+)
+# Per-ONU local-manage (mgmt access) — vai para extra_vendor
+RX_ONU_LOCAL_MGMT = re.compile(
+    r"^\s*set\s+onu_local_manage_con\s+slot\s+(\d+)\s+pon\s+(\d+)\s+onu\s+(\d+)",
+    re.IGNORECASE,
+)
 RX_FDB_AGE = re.compile(r"^\s*set\s+fdb\s+agingtime\s+(\d+)", re.IGNORECASE)
 RX_AAA_MODE = re.compile(r"^\s*aaa\s+accounting-mode\s+(\S+)", re.IGNORECASE)
 RX_LINEID_CIRC = re.compile(r"^\s*set\s+circuit_id\s+format\s+(\S+)", re.IGNORECASE)
@@ -224,6 +294,7 @@ class FiberhomeAN5516Parser(BaseParser):
         partial_svc: dict[int, dict] = {}
         cs_profile_buf: Optional[ONUTypeProfile] = None
         pending_radius: dict[str, RadiusServer] = {}
+        dba_bandwidth_combos: set[tuple[str, int, int, int]] = set()
 
         # Detecta firmware do header se presente
         if "WOS system config" in config_text:
@@ -571,6 +642,208 @@ class FiberhomeAN5516Parser(BaseParser):
                 )
                 continue
 
+            # ------------ Per-ONU service bandwidth (GAP-2 fix REAL) ------
+            if m := RX_SERVICE_BA.match(line):
+                slot = safe_int(m.group(1)) or 0
+                pon_port = safe_int(m.group(2)) or 0
+                onu_id = safe_int(m.group(3)) or 0
+                svc_type = m.group(4).lower()   # data|iptv|voi
+                fix_bw = safe_int(m.group(5)) or 0
+                assured_bw = safe_int(m.group(6)) or 0
+                max_bw = safe_int(m.group(7)) or 0
+                # Bind à ONU via extra_vendor (preservamos para a UI inspecionar)
+                pon_iface = f"pon-1/{slot}/{pon_port}"
+                onu = next(
+                    (o for o in config.onus
+                     if o.pon_interface == pon_iface and o.onu_id == onu_id),
+                    None,
+                )
+                if onu is not None:
+                    bands = onu.extra_vendor.setdefault("service_ba", [])
+                    bands.append({
+                        "type": svc_type,
+                        "fix": fix_bw,
+                        "assured": assured_bw,
+                        "max": max_bw,
+                    })
+                # Acumula para deduplicação futura
+                dba_bandwidth_combos.add((svc_type, fix_bw, assured_bw, max_bw))
+                continue
+
+            # ------------ Per-ONU pon-type (gpon=1, xgpon=2)
+            if m := RX_ONU_PON_TYPE.match(line):
+                # Informativo: já capturado pelo whitelist; ignora silenciosamente
+                continue
+            if m := RX_ONU_PORT_SEPARATE.match(line):
+                slot = safe_int(m.group(1)) or 0
+                pon_port = safe_int(m.group(2)) or 0
+                onu_id = safe_int(m.group(3)) or 0
+                separate = m.group(4).lower() == "enable"
+                pon_iface = f"pon-1/{slot}/{pon_port}"
+                onu = next(
+                    (o for o in config.onus
+                     if o.pon_interface == pon_iface and o.onu_id == onu_id),
+                    None,
+                )
+                if onu is not None:
+                    onu.extra_vendor["lan_isolation"] = separate
+                continue
+            if m := RX_ONU_WIFI.match(line):
+                slot = safe_int(m.group(1)) or 0
+                pon_port = safe_int(m.group(2)) or 0
+                onu_id = safe_int(m.group(3)) or 0
+                pon_iface = f"pon-1/{slot}/{pon_port}"
+                onu = next(
+                    (o for o in config.onus
+                     if o.pon_interface == pon_iface and o.onu_id == onu_id),
+                    None,
+                )
+                if onu is not None:
+                    onu.wifi_enabled = True
+                continue
+
+            # ------------ ONU SSID (L9 SSID data) — regex permissivo
+            if m := RX_ONU_SSID.match(line):
+                slot = safe_int(m.group(1)) or 0
+                pon_port = safe_int(m.group(2)) or 0
+                onu_id = safe_int(m.group(3)) or 0
+                trailer = m.group(6)
+                ssid_name_m = _RX_SSID_NAME.search(trailer)
+                authmode_m = _RX_AUTHMODE.search(trailer)
+                encrypt_m = _RX_ENCRYPT.search(trailer)
+                wpakey_m = _RX_WPAKEY.search(trailer)
+                pon_iface = f"pon-1/{slot}/{pon_port}"
+                onu = next(
+                    (o for o in config.onus
+                     if o.pon_interface == pon_iface and o.onu_id == onu_id),
+                    None,
+                )
+                if onu is not None:
+                    onu.wifi_enabled = True
+                    ssids = onu.extra_vendor.setdefault("ssids", [])
+                    ssids.append({
+                        "serv_no": safe_int(m.group(4)),
+                        "index": safe_int(m.group(5)),
+                        "name": ssid_name_m.group(1) if ssid_name_m else None,
+                        "authmode": authmode_m.group(1) if authmode_m else None,
+                        "encrypt": encrypt_m.group(1) if encrypt_m else None,
+                        "key_present": (wpakey_m.group(1) if wpakey_m else "null") != "null",
+                    })
+                continue
+
+            if m := RX_ONU_WPS.match(line):
+                slot = safe_int(m.group(1)) or 0
+                pon_port = safe_int(m.group(2)) or 0
+                onu_id = safe_int(m.group(3)) or 0
+                pon_iface = f"pon-1/{slot}/{pon_port}"
+                onu = next(
+                    (o for o in config.onus
+                     if o.pon_interface == pon_iface and o.onu_id == onu_id),
+                    None,
+                )
+                if onu is not None:
+                    onu.wifi_enabled = True
+                    onu.extra_vendor["wps_enabled"] = m.group(4).lower() == "enable"
+                continue
+
+            # ------------ ONU autho alternativo (equivalente a set white phy)
+            if m := RX_AUTHO.match(line):
+                slot = safe_int(m.group(1)) or 0
+                pon_port = safe_int(m.group(2)) or 0
+                onu_type = m.group(3)
+                onu_id = safe_int(m.group(4)) or 0
+                serial = m.group(5)
+                password = m.group(6)
+                pon_iface = f"pon-1/{slot}/{pon_port}"
+                # Se ONU já existe (do set white phy), apenas confirma metadata
+                onu = next(
+                    (o for o in config.onus
+                     if o.pon_interface == pon_iface and o.onu_id == onu_id),
+                    None,
+                )
+                if onu is None:
+                    # Cria a ONU; PON também se necessário
+                    pon = seen_pons.get((slot, pon_port))
+                    if pon is None:
+                        pon = PON(
+                            interface=pon_iface,
+                            slot=slot,
+                            port=pon_port,
+                            port_type=PortType.GPON,
+                        )
+                        seen_pons[(slot, pon_port)] = pon
+                    onu = ONU(
+                        pon_interface=pon_iface,
+                        onu_id=onu_id,
+                        slot=slot,
+                        pon_port=pon_port,
+                        serial_number=serial,
+                        password=None if password.lower() == "null" else password,
+                        onu_type=onu_type,
+                        line_profile_name=onu_type,
+                        service_profile_name=onu_type,
+                        mode=OperationMode.BRIDGE,
+                    )
+                    pon.onus.append(onu)
+                    config.onus.append(onu)
+                else:
+                    onu.onu_type = onu.onu_type or onu_type
+                    onu.serial_number = onu.serial_number or serial
+                continue
+
+            # ------------ Per-ONU WAN config (GAP-6 com dados reais)
+            # Regex permissivo: aceita qualquer trailer e extrai campos
+            if m := RX_WANCFG.match(line):
+                slot = safe_int(m.group(1)) or 0
+                pon_port = safe_int(m.group(2)) or 0
+                onu_id = safe_int(m.group(3)) or 0
+                index = safe_int(m.group(4)) or 1
+                trailer = m.group(5)
+                ip_stack_m = _RX_IP_STACK.search(trailer)
+                ipv6_src_m = _RX_IPV6_SRC.search(trailer)
+                prefix_src_m = _RX_PREFIX_SRC.search(trailer)
+                pon_iface = f"pon-1/{slot}/{pon_port}"
+                onu = next(
+                    (o for o in config.onus
+                     if o.pon_interface == pon_iface and o.onu_id == onu_id),
+                    None,
+                )
+                if onu is not None:
+                    wans = onu.extra_vendor.setdefault("wancfg", [])
+                    wans.append({
+                        "index": index,
+                        "ip_stack_mode": ip_stack_m.group(1) if ip_stack_m else None,
+                        "ipv6_src_type": ipv6_src_m.group(1) if ipv6_src_m else None,
+                        "prefix_src_type": prefix_src_m.group(1) if prefix_src_m else None,
+                        "raw": trailer.strip(),
+                    })
+                    onu.mode = OperationMode.ROUTER
+                continue
+
+            # ------------ set ep sl N pon N onu N band ... (banda upstream/downstream alternativa)
+            if m := RX_SET_EP.match(line):
+                slot = safe_int(m.group(1)) or 0
+                pon_port = safe_int(m.group(2)) or 0
+                onu_id = safe_int(m.group(3)) or 0
+                pon_iface = f"pon-1/{slot}/{pon_port}"
+                onu = next(
+                    (o for o in config.onus
+                     if o.pon_interface == pon_iface and o.onu_id == onu_id),
+                    None,
+                )
+                if onu is not None:
+                    onu.extra_vendor.setdefault("bandwidth_ep", []).append({
+                        "upstream_band": safe_int(m.group(4)),
+                        "downstream_band": safe_int(m.group(5)),
+                        "upstream_assured": safe_int(m.group(6)) if m.group(6) else None,
+                        "upstream_fix": safe_int(m.group(7)) if m.group(7) else None,
+                    })
+                continue
+
+            # ------------ set onu_local_manage_con (mgmt access per ONU) — captura mas marca
+            if RX_ONU_LOCAL_MGMT.match(line):
+                continue   # captura silenciosa (sem modelagem rica)
+
             # ------------ Lineid / AAA ------------------------------------
             if RX_AAA_MODE.match(line) or RX_LINEID_CIRC.match(line) or RX_LINEID_REMOTE.match(line):
                 # Capturados em campo de sistema simplificado
@@ -595,6 +868,45 @@ class FiberhomeAN5516Parser(BaseParser):
         config.uplinks = sorted(seen_uplinks.values(), key=lambda u: (u.slot or 0, u.port or 0))
         config.pons = sorted(seen_pons.values(), key=lambda p: (p.slot or 0, p.port or 0))
         config.radius_servers = list(pending_radius.values())
+
+        # Materializa DBAs reais a partir dos `set service_ba` capturados
+        # (cada combinação única vira um DBA — provenance=PARSER, conf=1.0)
+        from app.models import DBAProfile, DBAType, Provenance
+        next_dba_id = max((d.profile_id for d in config.dba_profiles), default=9) + 1
+        for svc_type, fix_bw, assured_bw, max_bw in sorted(dba_bandwidth_combos):
+            # Tipo DBA: type5 (fix+assured+max), type1 (fix only), type3 (assured+max)
+            if fix_bw and assured_bw and max_bw:
+                dba_type = DBAType.TYPE5
+            elif fix_bw and not assured_bw and not max_bw:
+                dba_type = DBAType.TYPE1
+            elif assured_bw and max_bw and not fix_bw:
+                dba_type = DBAType.TYPE3
+            elif max_bw and not assured_bw and not fix_bw:
+                dba_type = DBAType.TYPE4
+            elif assured_bw and not max_bw:
+                dba_type = DBAType.TYPE2
+            else:
+                dba_type = DBAType.TYPE4
+
+            # Nome legível: BA-DATA-1000M / BA-IPTV-100M / BA-VOI-1M
+            tier_label = (
+                f"{max_bw // 1024}M" if max_bw >= 1024
+                else f"{max_bw}K" if max_bw
+                else f"{fix_bw}K"
+            )
+            name = f"BA-{svc_type.upper()}-{tier_label}"
+            config.dba_profiles.append(
+                DBAProfile(
+                    profile_id=next_dba_id,
+                    name=name,
+                    type=dba_type,
+                    fix_bandwidth=fix_bw or None,
+                    assured_bandwidth=assured_bw or None,
+                    max_bandwidth=max_bw or None,
+                    provenance=Provenance.parsed(),
+                )
+            )
+            next_dba_id += 1
 
         config.parse_warnings = warnings
         config.raw_unparsed = unparsed
