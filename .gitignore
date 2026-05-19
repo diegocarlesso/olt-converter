@@ -22,3 +22,12 @@ uploads/*
 !uploads/.gitkeep
 exports/*
 !exports/.gitkeep
+-e 
+# Environment and credential files
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
