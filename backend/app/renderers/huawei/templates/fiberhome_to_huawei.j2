@@ -1,0 +1,8 @@
+{{ header }}
+{% for vlan in vlans %}
+vlan {{ vlan.vlan_id }}
+{% endfor %}
+{% for binding in service_bindings %}
+service-port {{ binding.binding_id }} vlan {{ binding.service_vlan }} gpon {{ binding.pon_ref.replace('pon-', '') }} ont {{ binding.onu_id }}
+{% endfor %}
+{{ footer }}
